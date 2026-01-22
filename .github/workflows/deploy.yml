@@ -1,0 +1,11 @@
+- name: Checkout code
+  uses: actions/checkout@v4
+
+- name: Inject Secret into HTML
+  run: |
+    sed -i "s|WEBHOOK_URL|${{ secrets.WEBHOOK_URL }}|g" BBK-chatbot.html
+
+- name: Upload artifact
+  uses: actions/upload-pages-artifact@v3
+  with:
+    path: '.'
