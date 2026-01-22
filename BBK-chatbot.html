@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <!-- <script src="https://cdn.botpress.cloud/webchat/v3.3/inject.js" defer></script>
+    <script src="https://files.bpcontent.cloud/2025/12/03/17/20251203173118-E712RXEN.js" defer></script> -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet">
+    <!-- <link href="https://cdn.jsdelivr.net/npm/@n8n/chat/dist/style.css" rel="stylesheet" /> -->
+    <link href="https://cdn.jsdelivr.net/npm/@n8n/chat@1.5.0/dist/style.css" rel="stylesheet" />
+    <script type="module">
+        import { createChat } from 'https://cdn.jsdelivr.net/npm/@n8n/chat/dist/chat.bundle.es.js';
+
+        createChat({
+            webhookUrl: 'https://wox-automation.app.n8n.cloud/webhook/c110a452-0503-425a-8488-0e8490115d5b/chat',
+            avatar: {
+                url: "https://www.instagram.com/bugandbearskitchen/",
+            },
+            theme: {
+                primary: "#24C4FF",
+                secondary: "#F5F5F5",
+                avatar: true,
+                rounded: "20px",
+            },
+            initialMessages: [
+                'Hi! Welcome to Bug & Bear\\\'s Kitchen 👋  \n How can I help you today? We offer cookies, custom orders, and baking classes.',
+            ],
+            i18n: {
+                en: {
+                    title: "Bug & Bear's Kitchen",
+                    subtitle: "Cookie Inquiries",
+                    footer: "",
+                    getStarted: "Start New Conversation",
+                    inputPlaceholder: "Type your message...",
+                },
+            },
+            allowFileUploads: true,
+            allowedFileTypes: ["image/png", "image/jpeg", "image/jpg", "image/webp"],
+            maxFilesPerMessage: 3
+        });
+    </script>
+    <style>
+        :root {
+            /* Brand colors */
+            --chat--color--primary: #1ea7ca;
+            --chat--color--secondary: #ffcb26;
+
+            --chat--color-white: #ffffff;
+            --chat--color-dark: #1b1b1b;
+            --chat--color-light: #f5f8fb;
+
+            /* Window size */
+            --chat--window--width: 380px;
+            --chat--window--height: 600px;
+
+            /* Header */
+            --chat--header-height: auto;
+            --chat--header--padding: 1.3rem;
+            --chat--header--background: #1ea7ca;
+            --chat--header--color: white;
+            --chat--heading--font-size: 1.4rem;
+            --chat--subtitle--font-size: 0.9rem;
+            --chat--subtitle--line-height: 1.35;
+            --chat--header--font: "Outfit";
+
+            /* Messages */
+            --chat--message--font-size: 1rem;
+            --chat--message--padding: 1rem;
+            --chat--message-line-height: 1.6;
+
+            /* Bot bubble */
+            --chat--message--bot--background: white;
+            --chat--message--bot--color: #222;
+            --chat--message--bot--border: none;
+
+            /* User bubble */
+            --chat--message--user--background: #1ea7ca;
+            --chat--message--user--color: white;
+            --chat--message--user--border: none;
+
+            /* Roundness */
+            --chat--border-radius: 16px;
+
+            /* Input */
+            --chat--textarea--height: 54px;
+
+            /* Hover */
+            --chat--toggle--background: #1ea7ca;
+            --chat--toggle--hover--background: #1ea8caad; /* hover fix */
+            --chat--toggle--active--background: #1ea8caae;
+
+            /* New: Add Files Button Hover Effect */
+            --chat--upload-btn--hover-bg: #ffcb26;     /* Custom hover background */
+            --chat--upload-btn--hover-color: #ffcc26c4;     /* Custom hover text color */
+            --chat--upload-btn--hover-shadow: 0 2px 8px rgba(0,0,0,0.15); /* Shadow */
+            --chat--upload-btn--hover-scale: 1.05;     /* Hover scale */
+            --chat--upload-btn--transition: 0.2s all;  /* Transition */
+        }
+
+        /* Default (idle) icon color */
+        .chat-input-file-button,
+        #chat-attach-file-button {
+            color: var(--chat--upload-btn--color);
+        }
+
+        /* On hover: SVG icon and text both change color */
+        .chat-input-file-button[data-v-66014261]:hover,
+        #chat-attach-file-button:hover {
+            color: var(--chat--upload-btn--hover-color);
+        }
+
+
+        n8n-chat, n8n-chat * {
+            font-family: "Outfit", sans-serif !important;
+        }
+    </style>
+</head>
+<body>
+
+</body>
+</html>
