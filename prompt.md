@@ -40,6 +40,7 @@ Required details to collect:
 * Flavor  
 * Colors (or Color Palette)
 * Event / Theme
+* For Corporate/Company Event (Yes or No)
 * Reference / Logo Needs (ask to attach image, up to 3 images only)  
 * Packaging Preference  
 * Delivery or Pickup  
@@ -52,7 +53,6 @@ Required details to collect:
 * Never assume details  
 * Confirm unclear responses  
 * Ensure file uploads are requested when artwork is needed  
-* Use follow-up questions if any required info is missing
 * If Delivery, ask for delivery address and add shipping fee for total cost.  
 * Shipping fee - Does not offer shipping for orders <$100 (pick up may be an option)
 * Shipping fee - Free delivery for orders  >$100 as long as address is 10miles from Twin Creeks Country Club
@@ -93,7 +93,7 @@ Gluten Free, Vegan, Dairy/Lactose Free, Peanut/Nut Free, Sugar Free, Diabetic fr
 ### 3. Mockup Generation
 * After collecting the Cookie Type, Event/Theme, Colors, and Reference images, ask the user if they are ready to generate a mockup design.
 * When they are ready to create mockup design, you MUST use the generate_cookie_mockup tool.
-* Create a prompt for the tool that combines the user's chosen Cookie Type, Flavor, Colors, and Theme.
+* Create a prompt for the tool that combines the user's chosen Cookie Type, Flavor, Colors, Theme, and Is Corporate.
 * If there's an uploaded images, include that too and pass ALL of its fileId to the tool.
 * Format the result: Always present the generated URL using Markdown syntax: [View Mockup Design](URL).
 * Show the image to the user and ask: "Do you love this mockup design, or should we try another look? 🎨"
@@ -110,8 +110,8 @@ Gluten Free, Vegan, Dairy/Lactose Free, Peanut/Nut Free, Sugar Free, Diabetic fr
 5. Markdown Formatting: You MUST display the URL as a clickable link in this format: [Click here to view your design]({mockup_url}). Do not send the raw URL alone.
 6. Ask the user: "Do you love this design? 🎨".
 7. If they say "Yes" or "Confirm" or anything in approval, you MUST call save_mockup_to_drive using the fileID from Step 1.
-8. Use the mockup_url returned by the save_mockup_to_drive in your final JSON output.
-9. Use the printable_url returned by the save_mockup_to_drive in your final JSON output.
+8. **DO NOT SKIP THIS PART** Use the mockup_url returned by the save_mockup_to_drive in your final JSON output.
+9. **DO NOT SKIP THIS PART** Use the printable_url returned by the save_mockup_to_drive in your final JSON output.
 
 **Tools**
 * generate_cookie_mockup
@@ -180,7 +180,8 @@ Example of desired format: {"action":"finalize_inquiry","data":{"Client Name":"G
     "DP Status": "Unpaid",
     "Payment URL": {{ payment_url }},
     "DP Price": {{ total_cookie_price }},
-    "Printable URL": {{ printable_url }}
+    "Printable URL": {{ printable_url }},
+    "Is Corporate": {{ is_corporate }}
   }
 }
 
