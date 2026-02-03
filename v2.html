@@ -277,6 +277,10 @@
       color: #ef4444;
       cursor: pointer;
       padding: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
     }
 
     .chat-input-container {
@@ -394,20 +398,101 @@
     .hidden {
       display: none !important;
     }
+
+    /* Responsive Styles */
+    @media (max-width: 768px) {
+      #chat-widget-container {
+        width: 100vw !important;
+        height: 100vh !important;
+        bottom: 0 !important;
+        right: 0 !important;
+        top: 0 !important;
+        left: 0 !important;
+        border-radius: 0 !important;
+      }
+
+      #chat-widget-button {
+        bottom: 20px !important;
+        right: 20px !important;
+        padding: 0 12px 0 10px;
+        height: 50px;
+      }
+
+      #chat-widget-button svg {
+        width: 20px;
+        height: 20px;
+      }
+
+      #chat-widget-button .button-text {
+        font-size: 14px;
+      }
+
+      .message-content {
+        max-width: 90%;
+        font-size: 14px;
+      }
+
+      .chat-messages {
+        padding: 16px;
+      }
+
+      .chat-input-container {
+        padding: 12px 16px;
+      }
+
+      #chat-input {
+        font-size: 16px; /* Prevents zoom on iOS */
+      }
+    }
+
+    @media (min-width: 769px) and (max-width: 1024px) {
+      #chat-widget-container {
+        width: 400px;
+        height: 500px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .message-content {
+        max-width: 95%;
+        font-size: 13px;
+        padding: 10px 14px;
+      }
+
+      .chat-header h3 {
+        font-size: 14px;
+      }
+
+      .header-buttons button {
+        width: 28px;
+        height: 28px;
+      }
+
+      .chat-input-container {
+        padding: 10px 12px;
+        gap: 8px;
+      }
+
+      .attach-button svg,
+      .send-button svg {
+        width: 20px;
+        height: 20px;
+      }
+    }
   </style>
 </head>
 <body>
   <!-- Chat Widget Button -->
   <button id="chat-widget-button">
-    <svg viewBox="0 0 64 64" style="width: 24px; height: 24px;">
+    <svg viewBox="0 0 64 64" style="width: 22px; height: 22px;">
       <!-- Speech bubble background -->
-      <rect x="8" y="12" width="44" height="32" rx="6" ry="6" fill="white"/>
+      <rect x="8" y="12" width="44" height="32" rx="6" ry="6" fill="#FAD02C"/>
       <!-- Speech bubble tail -->
-      <path d="M 16 44 L 12 52 L 20 44 Z" fill="white"/>
+      <path d="M 16 44 L 12 52 L 20 44 Z" fill="#FAD02C"/>
       <!-- Three dots -->
-      <circle cx="20" cy="28" r="3" fill="#4A9FB5"/>
-      <circle cx="32" cy="28" r="3" fill="#4A9FB5"/>
-      <circle cx="44" cy="28" r="3" fill="#4A9FB5"/>
+      <circle cx="20" cy="28" r="3" fill="#007D99"/>
+      <circle cx="32" cy="28" r="3" fill="#007D99"/>
+      <circle cx="44" cy="28" r="3" fill="#007D99"/>
     </svg>
     <span class="button-text">Chat</span>
   </button>
@@ -684,6 +769,14 @@
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#039;');
+
+      // Parse clickable images FIRST: [![alt](img_url)](link_url)
+      html = html.replace(/\[!\[([^\]]*)\]\(([^)]+)\)\]\(([^)]+)\)/g,
+        '<a href="$3" target="_blank" rel="noopener noreferrer"><img src="$2" alt="$1" style="max-width: 100%; height: auto; border-radius: 8px; cursor: pointer; display: block; margin: 8px 0;"></a>');
+
+      // Parse simple images: ![alt](url)
+      html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g,
+        '<img src="$2" alt="$1" style="max-width: 100%; height: auto; border-radius: 8px; display: block; margin: 8px 0;">');
 
       // Parse markdown links: [text](url)
       html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
