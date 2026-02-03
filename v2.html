@@ -50,7 +50,7 @@
     }
 
     #chat-widget-button .button-text {
-      color: #F5B942;
+      color: #FAD02C;
       font-size: 16px;
       font-weight: 700;
       letter-spacing: 0.5px;
@@ -91,7 +91,7 @@
     .chat-header h3 {
       font-size: 16px;
       font-weight: 700;
-      color: #F5B942;
+      color: #FAD02C;
       margin: 0;
     }
 
@@ -101,7 +101,7 @@
     }
 
     .header-buttons button {
-      background: #F5B942;
+      background: #FAD02C;
       border: none;
       width: 32px;
       height: 32px;
@@ -176,6 +176,25 @@
       background: white;
       color: #2C3E50;
       box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+    }
+
+    .message-content a {
+      color: #5BA4B5;
+      text-decoration: underline;
+      word-break: break-word;
+    }
+
+    .message-content a:hover {
+      color: #4A9FB5;
+      text-decoration: none;
+    }
+
+    .message.user .message-content a {
+      color: #FAD02C;
+    }
+
+    .message.user .message-content a:hover {
+      color: #E5C01C;
     }
 
     .file-attachment {
@@ -327,7 +346,7 @@
     .attach-button svg {
       width: 22px;
       height: 22px;
-      fill: #F5B942;
+      fill: #FAD02C;
     }
 
     #chat-input {
@@ -449,10 +468,10 @@
       webhookUrl: 'WEBHOOK_URL',
 
       // Primary color for the widget (teal blue)
-      primaryColor: '#5BA4B5',
+      primaryColor: '#007D99',
 
       // Button background color (teal blue from the design)
-      buttonColor: '#5BA4B5',
+      buttonColor: '#007D99',
 
       // Button text
       buttonText: 'Chat',
@@ -483,9 +502,6 @@
     // Initialize widget
     function init() {
       applyConfig();
-
-      // Open chat by default (remove this line if you want it closed initially)
-      openChat();
 
       // Add event listeners
       document.getElementById('chat-input').addEventListener('keypress', function(e) {
@@ -658,6 +674,34 @@
       }
     }
 
+    function parseMarkdown(text) {
+      if (!text) return '';
+
+      // Escape HTML to prevent XSS attacks
+      let html = text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+
+      // Parse markdown links: [text](url)
+      html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+
+      // Parse bold: **text** or __text__
+      html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+      html = html.replace(/__([^_]+)__/g, '<strong>$1</strong>');
+
+      // Parse italic: *text* or _text_ (but not if part of a URL or already bold)
+      html = html.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+      html = html.replace(/(?<![\w])_([^_]+)_(?![\w])/g, '<em>$1</em>');
+
+      // Convert line breaks to <br>
+      html = html.replace(/\n/g, '<br>');
+
+      return html;
+    }
+
     function addMessage(text, sender, files) {
       if (!files) files = [];
       if (!Array.isArray(files)) files = [files]; // Handle single file case
@@ -670,8 +714,9 @@
 
       // Add text if present
       if (text) {
-        const textNode = document.createTextNode(text);
-        contentDiv.appendChild(textNode);
+        // Parse markdown and render as HTML
+        const htmlContent = parseMarkdown(text);
+        contentDiv.innerHTML = htmlContent;
       }
 
       // Add file attachments
