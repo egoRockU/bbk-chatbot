@@ -961,7 +961,6 @@
 
     function extractResponseFromN8n(data) {
       // Handle various n8n response formats
-      console.log('n8n response:', data);
 
       // If data is a string, return it directly
       if (typeof data === 'string') {
@@ -1003,7 +1002,6 @@
       // (useful for debugging what n8n is actually returning)
       if (Object.keys(data).length > 0) {
         const jsonStr = JSON.stringify(data, null, 2);
-        console.warn('Could not find standard response field. Full response:', jsonStr);
         // Return a formatted version for debugging
         return 'Received response (check console for details):\n' + jsonStr.substring(0, 200);
       }
@@ -1072,8 +1070,6 @@
             formData.append('files', file, file.name);
           });
 
-          console.log('Sending to n8n with files:', filesToSend.map(f => ({ fileName: f.name, mimeType: f.type, fileSize: f.size })));
-
           response = await fetch(config.webhookUrl, {
             method: 'POST',
             mode: 'cors',
@@ -1092,8 +1088,6 @@
             history: history
           };
 
-          console.log('Sending to n8n:', payload);
-
           response = await fetch(config.webhookUrl, {
             method: 'POST',
             mode: 'cors',
@@ -1105,16 +1099,12 @@
           });
         }
 
-        console.log('Response status:', response.status);
-        console.log('Response headers:', response.headers);
-
         if (!response.ok) {
           throw new Error('HTTP error! status: ' + response.status);
         }
 
         // Get the raw response text first
         const responseText = await response.text();
-        console.log('Raw response:', responseText);
 
         // Try to parse as JSON
         let data;
@@ -1146,7 +1136,6 @@
         }, 500);
 
       } catch (error) {
-        console.error('Full error details:', error);
         setTimeout(function() {
           hideTypingIndicator();
 
