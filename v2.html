@@ -1,0 +1,1031 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat Widget</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: transparent;
+      min-height: 100vh;
+      padding: 0;
+      margin: 0;
+    }
+
+    /* Chat Widget Styles */
+    #chat-widget-button {
+      position: fixed;
+      width: auto;
+      height: 40px;
+      padding: 0 16px 0 14px;
+      border-radius: 20px;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: transform 0.3s, box-shadow 0.3s;
+      z-index: 9998;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    }
+
+    #chat-widget-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+    }
+
+    #chat-widget-button svg {
+      width: 24px;
+      height: 24px;
+      flex-shrink: 0;
+    }
+
+    #chat-widget-button .button-text {
+      color: #F5B942;
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: capitalize;
+    }
+
+    #chat-widget-container {
+      position: fixed;
+      width: 480px;
+      height: 530px;
+      background: #D5E8EF;
+      border-radius: 0;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+      display: none;
+      flex-direction: column;
+      transition: all 0.3s;
+      z-index: 9999;
+    }
+
+    #chat-widget-container.open {
+      display: flex;
+    }
+
+    #chat-widget-container.minimized {
+      height: 78px !important;
+    }
+
+    .chat-header {
+      padding: 16px 20px;
+      border-radius: 0;
+      background: #5BA4B5;
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .chat-header h3 {
+      font-size: 16px;
+      font-weight: 700;
+      color: #F5B942;
+      margin: 0;
+    }
+
+    .header-buttons {
+      display: flex;
+      gap: 8px;
+    }
+
+    .header-buttons button {
+      background: #F5B942;
+      border: none;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.2s;
+    }
+
+    .header-buttons button:hover {
+      transform: scale(1.05);
+    }
+
+    .header-buttons svg {
+      fill: #5BA4B5;
+      width: 18px;
+      height: 18px;
+    }
+
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      background: #D5E8EF;
+    }
+
+    .message {
+      display: flex;
+      animation: slideIn 0.3s;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .message.user {
+      justify-content: flex-end;
+    }
+
+    .message.bot {
+      justify-content: flex-start;
+    }
+
+    .message-content {
+      max-width: 85%;
+      padding: 12px 16px;
+      border-radius: 12px;
+      font-size: 14px;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      font-weight: 400;
+    }
+
+    .message.user .message-content {
+      background: #5BA4B5;
+      color: white;
+    }
+
+    .message.bot .message-content {
+      background: white;
+      color: #2C3E50;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+    }
+
+    .file-attachment {
+      margin-top: 6px;
+      font-size: 12px;
+      opacity: 0.9;
+    }
+
+    .typing-indicator {
+      display: flex;
+      gap: 3px;
+      padding: 10px;
+      background: #f0f0f0;
+      border-radius: 10px;
+      width: fit-content;
+    }
+
+    .typing-dot {
+      width: 6px;
+      height: 6px;
+      background: #999;
+      border-radius: 50%;
+      animation: bounce 1.4s infinite;
+    }
+
+    .typing-dot:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+
+    .typing-dot:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+
+    @keyframes bounce {
+      0%, 60%, 100% {
+        transform: translateY(0);
+      }
+      30% {
+        transform: translateY(-8px);
+      }
+    }
+
+    .file-preview {
+      padding: 10px 14px;
+      background: #f9f9f9;
+      border-top: 1px solid #e0e0e0;
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .file-preview.show {
+      display: flex;
+    }
+
+    .file-preview-content {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex: 1;
+    }
+
+    .file-preview-thumbnail {
+      width: 40px;
+      height: 40px;
+      object-fit: cover;
+      border-radius: 6px;
+      border: 2px solid #e0e0e0;
+    }
+
+    .file-preview span {
+      font-size: 13px;
+      color: #555;
+    }
+
+    .file-preview button {
+      background: none;
+      border: none;
+      color: #ef4444;
+      cursor: pointer;
+      padding: 4px;
+    }
+
+    .chat-input-container {
+      padding: 16px 20px;
+      border-top: none;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      position: relative;
+      background: #D5E8EF;
+    }
+
+    .chat-input-container.hidden {
+      display: none;
+    }
+
+    .chat-input-container.drag-over {
+      background: #e3f2fd;
+      border-top: 2px dashed #2196f3;
+    }
+
+    .drag-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(33, 150, 243, 0.1);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    .drag-overlay.show {
+      display: flex;
+    }
+
+    .drag-overlay-text {
+      background: white;
+      padding: 14px 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      font-size: 14px;
+      color: #2196f3;
+      font-weight: 600;
+    }
+
+    .attach-button {
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.2s;
+      border-radius: 0;
+      flex-shrink: 0;
+    }
+
+    .attach-button:hover {
+      transform: scale(1.1);
+    }
+
+    .attach-button svg {
+      width: 22px;
+      height: 22px;
+      fill: #F5B942;
+    }
+
+    #chat-input {
+      flex: 1;
+      padding: 10px 16px;
+      border: none;
+      border-radius: 20px;
+      font-size: 14px;
+      outline: none;
+      transition: box-shadow 0.3s;
+      background: white;
+      color: #2C3E50;
+    }
+
+    #chat-input:focus {
+      box-shadow: 0 0 0 2px #5BA4B5;
+    }
+
+    .send-button {
+      border: none;
+      padding: 0;
+      background: transparent;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.2s;
+      flex-shrink: 0;
+    }
+
+    .send-button:hover {
+      transform: scale(1.1);
+    }
+
+    .send-button svg {
+      fill: #5BA4B5;
+      width: 22px;
+      height: 22px;
+    }
+
+    #file-input {
+      display: none;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+  </style>
+</head>
+<body>
+  <!-- Chat Widget Button -->
+  <button id="chat-widget-button">
+    <svg viewBox="0 0 64 64" style="width: 24px; height: 24px;">
+      <!-- Speech bubble background -->
+      <rect x="8" y="12" width="44" height="32" rx="6" ry="6" fill="white"/>
+      <!-- Speech bubble tail -->
+      <path d="M 16 44 L 12 52 L 20 44 Z" fill="white"/>
+      <!-- Three dots -->
+      <circle cx="20" cy="28" r="3" fill="#4A9FB5"/>
+      <circle cx="32" cy="28" r="3" fill="#4A9FB5"/>
+      <circle cx="44" cy="28" r="3" fill="#4A9FB5"/>
+    </svg>
+    <span class="button-text">Chat</span>
+  </button>
+
+  <!-- Chat Widget Container -->
+  <div id="chat-widget-container">
+    <div class="chat-header" id="chat-header">
+      <h3 id="header-title">Bug & Bear's Kitchen</h3>
+      <div class="header-buttons">
+        <button onclick="closeChat()" title="Close chat">
+          <svg viewBox="0 0 24 24">
+            <path d="M7 10l5 5 5-5z"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="chat-messages" id="chat-messages"></div>
+
+    <div class="file-preview" id="file-preview">
+      <div class="file-preview-content">
+        <img id="file-thumbnail" class="file-preview-thumbnail" style="display: none;">
+        <span id="file-name"></span>
+      </div>
+      <button onclick="removeFile()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="chat-input-container" id="input-container">
+      <div class="drag-overlay" id="drag-overlay">
+        <div class="drag-overlay-text">📷 Drop image here</div>
+      </div>
+      <input type="file" id="file-input" accept="image/jpeg,image/jpg,image/png" multiple onchange="handleFileSelect(event)">
+      <button class="attach-button" onclick="document.getElementById('file-input').click()" title="Attach image">
+        <svg viewBox="0 0 24 24">
+          <path d="M16.5 6v11.5c0 2.21-1.79 4-4 4s-4-1.79-4-4V5c0-1.38 1.12-2.5 2.5-2.5s2.5 1.12 2.5 2.5v10.5c0 .55-.45 1-1 1s-1-.45-1-1V6H10v9.5c0 1.38 1.12 2.5 2.5 2.5s2.5-1.12 2.5-2.5V5c0-2.21-1.79-4-4-4S7 2.79 7 5v12.5c0 3.04 2.46 5.5 5.5 5.5s5.5-2.46 5.5-5.5V6h-1.5z"/>
+        </svg>
+      </button>
+      <input type="text" id="chat-input" placeholder="">
+      <button class="send-button" onclick="sendMessage()" id="send-button" title="Send message">
+        <svg viewBox="0 0 24 24">
+          <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <script>
+    // ==========================================
+    // CONFIGURATION - Change these values
+    // ==========================================
+
+    const config = {
+      // Your n8n webhook URL - Replace with your actual webhook URL
+      webhookUrl: 'WEBHOOK_URL',
+
+      // Primary color for the widget (teal blue)
+      primaryColor: '#5BA4B5',
+
+      // Button background color (teal blue from the design)
+      buttonColor: '#5BA4B5',
+
+      // Button text
+      buttonText: 'Chat',
+
+      // Position of the widget: 'bottom-right', 'bottom-left', 'top-right', 'top-left'
+      position: 'bottom-right',
+
+      // Bot name shown in the header
+      botName: "Bug & Bear's Kitchen",
+
+      // Welcome message shown when chat opens
+      welcomeMessage: "Hi there! Welcome to Bug and Bear's Kitchen!\n\nWhat can we bake for you today?\n\nYou can ask me about:\n> Our signature cookies\n> Custom orders\n> Cookies for events\n> Cookie Class\n\nI'm here to satisfy your sweet cravings 🍪",
+
+      // Placeholder text for the input field
+      placeholder: ''
+    };
+
+    // ==========================================
+    // Widget Code - Don't modify below unless needed
+    // ==========================================
+
+    let messages = [];
+    let attachedFiles = []; // Changed to array to support multiple files
+    let isMinimized = false;
+    const MAX_IMAGES = 3;
+    const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png'];
+
+    // Initialize widget
+    function init() {
+      applyConfig();
+
+      // Open chat by default (remove this line if you want it closed initially)
+      openChat();
+
+      // Add event listeners
+      document.getElementById('chat-input').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          sendMessage();
+        }
+      });
+
+      // Add paste event listener for images
+      document.getElementById('chat-input').addEventListener('paste', handlePaste);
+
+      // Add click handler for chat button
+      document.getElementById('chat-widget-button').addEventListener('click', openChat);
+
+      // Add drag and drop event listeners
+      setupDragAndDrop();
+    }
+
+    function handlePaste(e) {
+      const items = e.clipboardData.items;
+
+      for (let i = 0; i < items.length; i++) {
+        if (items[i].type.indexOf('image') !== -1) {
+          e.preventDefault();
+
+          const file = items[i].getAsFile();
+          if (file) {
+            handleImageFile(file);
+          }
+        }
+      }
+    }
+
+    function setupDragAndDrop() {
+      const container = document.getElementById('chat-widget-container');
+      const inputContainer = document.getElementById('input-container');
+      const dragOverlay = document.getElementById('drag-overlay');
+      let dragCounter = 0;
+
+      // Prevent default drag behaviors on the entire document
+      ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        container.addEventListener(eventName, preventDefaults, false);
+      });
+
+      function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+
+      // Highlight drop area when dragging over it
+      container.addEventListener('dragenter', function(e) {
+        dragCounter++;
+        if (e.dataTransfer.types.includes('Files')) {
+          inputContainer.classList.add('drag-over');
+          dragOverlay.classList.add('show');
+        }
+      });
+
+      container.addEventListener('dragleave', function(e) {
+        dragCounter--;
+        if (dragCounter === 0) {
+          inputContainer.classList.remove('drag-over');
+          dragOverlay.classList.remove('show');
+        }
+      });
+
+      // Handle drop
+      container.addEventListener('drop', function(e) {
+        dragCounter = 0;
+        inputContainer.classList.remove('drag-over');
+        dragOverlay.classList.remove('show');
+
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+          for (let i = 0; i < files.length; i++) {
+            handleImageFile(files[i]);
+          }
+        }
+      });
+    }
+
+    function handleImageFile(file) {
+      // Check if maximum images reached
+      if (attachedFiles.length >= MAX_IMAGES) {
+        alert(`Maximum ${MAX_IMAGES} images allowed`);
+        return;
+      }
+
+      // Validate file type
+      if (!ALLOWED_TYPES.includes(file.type.toLowerCase())) {
+        alert('Only JPG, JPEG, and PNG images are allowed');
+        return;
+      }
+
+      // Validate file size (optional - 5MB limit)
+      if (file.size > 5 * 1024 * 1024) {
+        alert('Image size must be less than 5MB');
+        return;
+      }
+
+      attachedFiles.push(file);
+      displayFilesPreviews();
+    }
+
+    function applyConfig() {
+      const button = document.getElementById('chat-widget-button');
+      const container = document.getElementById('chat-widget-container');
+      const header = document.getElementById('chat-header');
+      const buttonText = document.querySelector('#chat-widget-button .button-text');
+
+      // Apply colors
+      button.style.backgroundColor = config.buttonColor || config.primaryColor;
+      header.style.backgroundColor = config.primaryColor;
+
+      // Apply position
+      const positions = {
+        'bottom-right': { bottom: '20px', right: '20px', top: 'auto', left: 'auto' },
+        'bottom-left': { bottom: '20px', left: '20px', top: 'auto', right: 'auto' },
+        'top-right': { top: '20px', right: '20px', bottom: 'auto', left: 'auto' },
+        'top-left': { top: '20px', left: '20px', bottom: 'auto', right: 'auto' }
+      };
+
+      Object.assign(button.style, positions[config.position]);
+      Object.assign(container.style, positions[config.position]);
+
+      // Apply text
+      document.getElementById('header-title').textContent = config.botName;
+      document.getElementById('chat-input').placeholder = config.placeholder;
+      if (buttonText && config.buttonText) {
+        buttonText.textContent = config.buttonText;
+      }
+    }
+
+    function openChat() {
+      document.getElementById('chat-widget-button').style.display = 'none';
+      document.getElementById('chat-widget-container').classList.add('open');
+
+      if (messages.length === 0) {
+        addMessage(config.welcomeMessage, 'bot');
+      }
+    }
+
+    function closeChat() {
+      document.getElementById('chat-widget-button').style.display = 'flex';
+      document.getElementById('chat-widget-container').classList.remove('open');
+    }
+
+    function toggleMinimize() {
+      isMinimized = !isMinimized;
+      const container = document.getElementById('chat-widget-container');
+      const messagesDiv = document.getElementById('chat-messages');
+      const inputContainer = document.getElementById('input-container');
+      const filePreview = document.getElementById('file-preview');
+      const minimizeBtn = document.getElementById('minimize-btn');
+
+      if (isMinimized) {
+        container.classList.add('minimized');
+        messagesDiv.classList.add('hidden');
+        inputContainer.classList.add('hidden');
+        filePreview.classList.add('hidden');
+        // Change to up arrow when minimized
+        minimizeBtn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M7 14l5-5 5 5z"/></svg>';
+      } else {
+        container.classList.remove('minimized');
+        messagesDiv.classList.remove('hidden');
+        inputContainer.classList.remove('hidden');
+        if (attachedFiles.length > 0) filePreview.classList.remove('hidden');
+        // Change back to down arrow when expanded
+        minimizeBtn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>';
+      }
+    }
+
+    function addMessage(text, sender, files) {
+      if (!files) files = [];
+      if (!Array.isArray(files)) files = [files]; // Handle single file case
+
+      const messageDiv = document.createElement('div');
+      messageDiv.className = 'message ' + sender;
+
+      const contentDiv = document.createElement('div');
+      contentDiv.className = 'message-content';
+
+      // Add text if present
+      if (text) {
+        const textNode = document.createTextNode(text);
+        contentDiv.appendChild(textNode);
+      }
+
+      // Add file attachments
+      if (files.length > 0) {
+        const filesContainer = document.createElement('div');
+        filesContainer.style.display = 'flex';
+        filesContainer.style.flexWrap = 'wrap';
+        filesContainer.style.gap = '8px';
+        filesContainer.style.marginTop = '8px';
+
+        files.forEach(file => {
+          const fileDiv = document.createElement('div');
+          fileDiv.className = 'file-attachment';
+
+          // If it's an image, show a preview
+          if (file.type && file.type.startsWith('image/')) {
+            const img = document.createElement('img');
+            img.style.maxWidth = '120px';
+            img.style.maxHeight = '120px';
+            img.style.borderRadius = '6px';
+            img.style.display = 'block';
+            img.style.objectFit = 'cover';
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+              img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+
+            fileDiv.appendChild(img);
+          } else {
+            fileDiv.textContent = '📎 ' + file.name;
+          }
+
+          filesContainer.appendChild(fileDiv);
+        });
+
+        contentDiv.appendChild(filesContainer);
+      }
+
+      messageDiv.appendChild(contentDiv);
+      document.getElementById('chat-messages').appendChild(messageDiv);
+
+      messages.push({ text: text, sender: sender, files: files, timestamp: new Date() });
+      scrollToBottom();
+    }
+
+    function showTypingIndicator() {
+      const typingDiv = document.createElement('div');
+      typingDiv.className = 'message bot';
+      typingDiv.id = 'typing-indicator';
+
+      const indicator = document.createElement('div');
+      indicator.className = 'typing-indicator';
+      indicator.innerHTML = '<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>';
+
+      typingDiv.appendChild(indicator);
+      document.getElementById('chat-messages').appendChild(typingDiv);
+      scrollToBottom();
+    }
+
+    function hideTypingIndicator() {
+      const indicator = document.getElementById('typing-indicator');
+      if (indicator) {
+        indicator.remove();
+      }
+    }
+
+    function scrollToBottom() {
+      const messagesDiv = document.getElementById('chat-messages');
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    function handleFileSelect(event) {
+      const files = event.target.files;
+      for (let i = 0; i < files.length; i++) {
+        handleImageFile(files[i]);
+      }
+      event.target.value = ''; // Reset input
+    }
+
+    function displayFilesPreviews() {
+      const previewContainer = document.getElementById('file-preview');
+      const previewContent = previewContainer.querySelector('.file-preview-content');
+
+      // Clear existing previews
+      previewContent.innerHTML = '';
+
+      if (attachedFiles.length === 0) {
+        previewContainer.classList.remove('show');
+        return;
+      }
+
+      // Show preview container
+      previewContainer.classList.add('show');
+
+      // Create preview for each file
+      attachedFiles.forEach((file, index) => {
+        const fileItem = document.createElement('div');
+        fileItem.style.display = 'flex';
+        fileItem.style.alignItems = 'center';
+        fileItem.style.gap = '8px';
+        fileItem.style.marginRight = '8px';
+
+        const thumbnail = document.createElement('img');
+        thumbnail.style.width = '40px';
+        thumbnail.style.height = '40px';
+        thumbnail.style.objectFit = 'cover';
+        thumbnail.style.borderRadius = '6px';
+        thumbnail.style.border = '2px solid #e0e0e0';
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          thumbnail.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+
+        const removeBtn = document.createElement('button');
+        removeBtn.innerHTML = '×';
+        removeBtn.style.background = '#ef4444';
+        removeBtn.style.color = 'white';
+        removeBtn.style.border = 'none';
+        removeBtn.style.borderRadius = '50%';
+        removeBtn.style.width = '18px';
+        removeBtn.style.height = '18px';
+        removeBtn.style.cursor = 'pointer';
+        removeBtn.style.fontSize = '14px';
+        removeBtn.style.lineHeight = '1';
+        removeBtn.onclick = function() {
+          removeFileAt(index);
+        };
+
+        fileItem.appendChild(thumbnail);
+        fileItem.appendChild(removeBtn);
+        previewContent.appendChild(fileItem);
+      });
+    }
+
+    function removeFileAt(index) {
+      attachedFiles.splice(index, 1);
+      displayFilesPreviews();
+    }
+
+    function removeFile() {
+      attachedFiles = [];
+      document.getElementById('file-input').value = '';
+      displayFilesPreviews();
+    }
+
+    function extractResponseFromN8n(data) {
+      // Handle various n8n response formats
+      console.log('n8n response:', data);
+
+      // If data is a string, return it directly
+      if (typeof data === 'string') {
+        return data;
+      }
+
+      // Check common n8n response fields in order of priority
+      const possibleFields = [
+        'output',           // Common n8n output field
+        'response',         // Custom response field
+        'message',          // Standard message field
+        'text',             // Text response field
+        'reply',            // Reply field
+        'answer',           // Answer field
+        'result',           // Result field
+        'data'              // Generic data field
+      ];
+
+      // Try to find the response in common fields
+      for (const field of possibleFields) {
+        if (data[field]) {
+          // If it's a string, return it
+          if (typeof data[field] === 'string') {
+            return data[field];
+          }
+          // If it's an object with a text/message property
+          if (typeof data[field] === 'object' && (data[field].text || data[field].message)) {
+            return data[field].text || data[field].message;
+          }
+        }
+      }
+
+      // Check if data is an array and get the first item
+      if (Array.isArray(data) && data.length > 0) {
+        return extractResponseFromN8n(data[0]);
+      }
+
+      // If we still haven't found a response, try to stringify the entire object
+      // (useful for debugging what n8n is actually returning)
+      if (Object.keys(data).length > 0) {
+        const jsonStr = JSON.stringify(data, null, 2);
+        console.warn('Could not find standard response field. Full response:', jsonStr);
+        // Return a formatted version for debugging
+        return 'Received response (check console for details):\n' + jsonStr.substring(0, 200);
+      }
+
+      return null;
+    }
+
+    async function sendMessage() {
+      const input = document.getElementById('chat-input');
+      const message = input.value.trim();
+
+      if (!message && attachedFiles.length === 0) return;
+
+      // Store reference to the files before clearing
+      const filesToSend = [...attachedFiles];
+
+      // Add user message with files
+      addMessage(message, 'user', filesToSend);
+      input.value = '';
+      removeFile();
+
+      // Show typing indicator
+      showTypingIndicator();
+
+      // Generate or retrieve session ID
+      let sessionId = localStorage.getItem('chatSessionId');
+      if (!sessionId) {
+        sessionId = generateSessionId();
+        localStorage.setItem('chatSessionId', sessionId);
+      }
+
+      // Get conversation history for context
+      const history = messages.slice(-5).map(msg => ({
+        role: msg.sender === 'user' ? 'user' : 'assistant',
+        content: msg.text
+      }));
+
+      try {
+        let response;
+
+        // If there are files, send as FormData (multipart/form-data)
+        if (filesToSend.length > 0) {
+          const formData = new FormData();
+
+          // Add text data
+          formData.append('message', message);
+          formData.append('text', message);
+          formData.append('input', message);
+          formData.append('chatInput', message);
+          formData.append('timestamp', new Date().toISOString());
+          formData.append('sessionId', sessionId);
+          formData.append('history', JSON.stringify(history));
+
+          // Add files as binary attachments
+          filesToSend.forEach((file, index) => {
+            formData.append('files', file, file.name);
+          });
+
+          console.log('Sending to n8n with files:', filesToSend.map(f => ({ fileName: f.name, mimeType: f.type, fileSize: f.size })));
+
+          response = await fetch(config.webhookUrl, {
+            method: 'POST',
+            mode: 'cors',
+            body: formData
+            // Note: Don't set Content-Type header - browser will set it automatically with boundary
+          });
+        } else {
+          // No files, send as regular JSON
+          const payload = {
+            message: message,
+            text: message,
+            input: message,
+            chatInput: message,
+            timestamp: new Date().toISOString(),
+            sessionId: sessionId,
+            history: history
+          };
+
+          console.log('Sending to n8n:', payload);
+
+          response = await fetch(config.webhookUrl, {
+            method: 'POST',
+            mode: 'cors',
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+            },
+            body: JSON.stringify(payload)
+          });
+        }
+
+        console.log('Response status:', response.status);
+        console.log('Response headers:', response.headers);
+
+        if (!response.ok) {
+          throw new Error('HTTP error! status: ' + response.status);
+        }
+
+        // Get the raw response text first
+        const responseText = await response.text();
+        console.log('Raw response:', responseText);
+
+        // Try to parse as JSON
+        let data;
+        try {
+          data = JSON.parse(responseText);
+        } catch (e) {
+          // If it's not JSON, treat it as plain text
+          data = { output: responseText };
+        }
+
+        const botResponse = extractResponseFromN8n(data);
+
+        setTimeout(function() {
+          hideTypingIndicator();
+          if (botResponse) {
+            addMessage(botResponse, 'bot');
+          } else {
+            addMessage('I received your message but couldn\'t process the response. Please check the webhook configuration.\n\nReceived: ' + responseText.substring(0, 100), 'bot');
+          }
+        }, 500);
+
+      } catch (error) {
+        console.error('Full error details:', error);
+        setTimeout(function() {
+          hideTypingIndicator();
+
+          let errorMsg = 'Sorry, I couldn\'t connect to the server.\n\n';
+
+          if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+            errorMsg += '❌ Connection failed. This could be:\n';
+            errorMsg += '1. CORS issue - n8n needs to allow cross-origin requests\n';
+            errorMsg += '2. Wrong webhook URL\n';
+            errorMsg += '3. n8n workflow is not active\n\n';
+            errorMsg += '💡 Check browser console (F12) for details';
+          } else {
+            errorMsg += 'Error: ' + error.message;
+          }
+
+          addMessage(errorMsg, 'bot');
+        }, 500);
+      }
+    }
+
+    // Helper function to convert file to base64
+    function fileToBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function generateSessionId() {
+      return 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    }
+
+    // Initialize on load
+    window.addEventListener('load', init);
+  </script>
+</body>
+</html>
