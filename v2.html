@@ -920,6 +920,8 @@
 
     async function sendMessage() {
       const input = document.getElementById('chat-input');
+      const sendButton = document.getElementById('send-button');
+      const attachButton = document.querySelector('.attach-button');
       const message = input.value.trim();
 
       if (!message && attachedFiles.length === 0) return;
@@ -931,6 +933,14 @@
       addMessage(message, 'user', filesToSend);
       input.value = '';
       removeFile();
+
+      // Disable input and buttons while waiting for response
+      input.disabled = true;
+      sendButton.disabled = true;
+      attachButton.disabled = true;
+      input.style.opacity = '0.6';
+      sendButton.style.opacity = '0.6';
+      attachButton.style.opacity = '0.6';
 
       // Show typing indicator
       showTypingIndicator();
@@ -1031,6 +1041,15 @@
           } else {
             addMessage('I received your message but couldn\'t process the response. Please check the webhook configuration.\n\nReceived: ' + responseText.substring(0, 100), 'bot');
           }
+
+          // Re-enable input and buttons
+          input.disabled = false;
+          sendButton.disabled = false;
+          attachButton.disabled = false;
+          input.style.opacity = '1';
+          sendButton.style.opacity = '1';
+          attachButton.style.opacity = '1';
+          input.focus();
         }, 500);
 
       } catch (error) {
@@ -1051,6 +1070,15 @@
           }
 
           addMessage(errorMsg, 'bot');
+
+          // Re-enable input and buttons
+          input.disabled = false;
+          sendButton.disabled = false;
+          attachButton.disabled = false;
+          input.style.opacity = '1';
+          sendButton.style.opacity = '1';
+          attachButton.style.opacity = '1';
+          input.focus();
         }, 500);
       }
     }
