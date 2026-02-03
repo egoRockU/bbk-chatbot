@@ -36,7 +36,6 @@ jobs:
       - name: Inject Secret into HTML
         run: |
           sed -i "s|WEBHOOK_URL|${{ secrets.WEBHOOK_URL }}|g" index.html
-          sed -i "s|WEBHOOK_URL|${{ secrets.WEBHOOK_URL }}|g" v2.html
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
