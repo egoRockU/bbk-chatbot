@@ -721,10 +721,11 @@ async function sendMessage(text) {
   showTyping();
 
   try {
-    // Build payload
+    // Build payload — n8n Chat Trigger required format
     const payload = {
+      action:    'sendMessage',          // ← required by Chat Trigger
       sessionId: SESSION_ID,
-      message:   text.trim(),
+      chatInput: text.trim(),            // ← Chat Trigger reads "chatInput", not "message"
     };
 
     // Attach images as base64 if any
@@ -747,15 +748,16 @@ async function sendMessage(text) {
     const data = await res.json();
 
     /*
-      Expected n8n response:
+      n8n Chat Trigger response shape:
       {
-        "reply":   "Your response text here",
-        "buttons": ["Option A", "Option B", "Option C"]   ← optional
+        "output":  "Bot reply text",        ← default field from AI Agent node
+        "buttons": ["Option A", "Option B"] ← optional, add via Set node in n8n
       }
 
-      If your AI node uses different field names, add them as fallbacks below.
+      To add buttons from n8n: use a Set node after your AI Agent and add
+      a "buttons" field with an array of strings.
     */
-    const reply   = data.reply   || data.text   || data.output || "Got it! 🍪";
+    const reply   = data.output  || data.reply  || data.text  || "Got it! 🍪";
     const buttons = data.buttons || data.options || [];
 
     hideTyping();
