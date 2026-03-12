@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Bug & Bear's Kitchen</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+
+<style>
+  /* ══════════════════════════════════════════
+     BRAND TOKENS — edit these to rebrand
+  ══════════════════════════════════════════ */
+  :root {
+    --brand-blue:        #1ea7ca;
+    --brand-blue-dark:   #1790b0;
+    --brand-blue-glow:   rgba(30,167,202,0.35);
+    --brand-yellow:      #ffcb26;
+    --brand-yellow-dark: #e6b000;
+    --brand-yellow-glow: rgba(255,203,38,0.4);
+    --brand-dark:        #1b1b1b;
+    --brand-light:       #f5f8fb;
+    --brand-white:       #ffffff;
+
+    --bg:           #f7fbfd;
+    --bubble-bot:   #ffffff;
+    --bubble-user:  var(--brand-blue);
+    --text:         #1b1b1b;
+    --text-muted:   #888;
+    --border:       #e4eef2;
+
+    --shadow-sm:    0 2px 10px rgba(30,167,202,0.10);
+    --shadow-lg:    0 12px 40px rgba(30,167,202,0.18);
+    --radius:       20px;
+    --widget-w:     380px;
+    --widget-h:     600px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Outfit', sans-serif;
+    background: #e8f6fa;
+    min-height: 100vh;
+  }
+
+  /* ══════════════════════════════════════════
+     FLOATING TOGGLE BUTTON
+  ══════════════════════════════════════════ */
+  #chat-toggle {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    width: 62px;
+    height: 62px;
+    border-radius: 50%;
+    background: var(--brand-blue);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 6px 22px var(--brand-blue-glow);
+    transition: transform 0.25s cubic-bezier(.34,1.56,.64,1), background 0.2s, box-shadow 0.2s;
+    z-index: 9999;
+  }
+  #chat-toggle:hover {
+    background: var(--brand-blue-dark);
+    transform: scale(1.1);
+    box-shadow: 0 10px 28px var(--brand-blue-glow);
+  }
+  #chat-toggle svg { width: 28px; height: 28px; fill: white; }
+  #chat-toggle .icon-close { display: none; }
+  #chat-toggle.open .icon-chat  { display: none; }
+  #chat-toggle.open .icon-close { display: block; }
+
+  /* pulsing yellow badge */
+  #chat-toggle::after {
+    content: '';
+    position: absolute;
+    top: 5px; right: 5px;
+    width: 15px; height: 15px;
+    background: var(--brand-yellow);
+    border-radius: 50%;
+    border: 2.5px solid white;
+    animation: badge-pulse 2s ease-in-out infinite;
+  }
+  #chat-toggle.open::after { display: none; }
+  @keyframes badge-pulse {
+    0%,100% { transform: scale(1);   opacity: 1; }
+    50%      { transform: scale(1.4); opacity: 0.7; }
+  }
+
+  /* ══════════════════════════════════════════
+     WIDGET PANEL
+  ══════════════════════════════════════════ */
+  #chat-widget {
+    position: fixed;
+    bottom: 100px;
+    right: 24px;
+    width: var(--widget-w);
+    height: var(--widget-h);
+    background: var(--bg);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-lg);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    z-index: 9998;
+    /* closed state */
+    opacity: 0;
+    pointer-events: none;
+    transform: scale(0.88) translateY(24px);
+    transform-origin: bottom right;
+    transition: transform 0.32s cubic-bezier(.34,1.56,.64,1), opacity 0.22s ease;
+  }
+  #chat-widget.visible {
+    opacity: 1;
+    pointer-events: all;
+    transform: scale(1) translateY(0);
+  }
+
+  /* ══════════════════════════════════════════
+     HEADER
+  ══════════════════════════════════════════ */
+  .chat-header {
+    background: var(--brand-blue);
+    padding: 18px 18px 16px;
+    flex-shrink: 0;
+    position: relative;
+    overflow: hidden;
+  }
+  /* decorative circles */
+  .chat-header::before {
+    content: '';
+    position: absolute;
+    top: -24px; right: -24px;
+    width: 110px; height: 110px;
+    background: rgba(255,255,255,0.10);
+    border-radius: 50%;
+  }
+  .chat-header::after {
+    content: '';
+    position: absolute;
+    bottom: -32px; left: 50px;
+    width: 90px; height: 90px;
+    background: rgba(255,203,38,0.12);
+    border-radius: 50%;
+  }
+
+  .header-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    position: relative;
+  }
+
+  .bot-avatar {
+    width: 46px; height: 46px;
+    border-radius: 50%;
+    background: white;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.15);
+    flex-shrink: 0;
+    /* gentle rock */
+    animation: rock 3.5s ease-in-out infinite;
+  }
+  @keyframes rock {
+    0%,100% { transform: rotate(-4deg); }
+    50%      { transform: rotate(4deg);  }
+  }
+
+  .header-info h2 {
+    font-size: 17px;
+    font-weight: 800;
+    color: white;
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+  }
+  .header-info p {
+    font-size: 12px;
+    color: rgba(255,255,255,0.82);
+    font-weight: 600;
+    margin-top: 2px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .status-dot {
+    width: 7px; height: 7px;
+    background: var(--brand-yellow);
+    border-radius: 50%;
+    display: inline-block;
+    animation: blink 1.6s ease-in-out infinite;
+  }
+  @keyframes blink {
+    0%,100% { opacity: 1; } 50% { opacity: 0.3; }
+  }
+
+  /* ══════════════════════════════════════════
+     MESSAGES AREA
+  ══════════════════════════════════════════ */
+  #messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 14px 14px 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    scroll-behavior: smooth;
+  }
+  #messages::-webkit-scrollbar { width: 4px; }
+  #messages::-webkit-scrollbar-thumb { background: #cde8f0; border-radius: 4px; }
+
+  /* message row */
+  .msg {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    animation: msg-in 0.28s cubic-bezier(.34,1.56,.64,1) both;
+  }
+  @keyframes msg-in {
+    from { transform: scale(0.75) translateY(12px); opacity: 0; }
+    to   { transform: scale(1)    translateY(0);    opacity: 1; }
+  }
+  .msg.user { flex-direction: row-reverse; }
+
+  /* avatars */
+  .msg-avatar {
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    background: var(--brand-blue);
+    font-size: 15px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    box-shadow: var(--shadow-sm);
+  }
+  .msg.user .msg-avatar {
+    background: var(--brand-yellow);
+  }
+
+  /* bubbles */
+  .msg-bubble {
+    max-width: 74%;
+    padding: 10px 14px;
+    border-radius: 18px;
+    border-bottom-left-radius: 4px;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.55;
+    color: var(--text);
+    background: var(--bubble-bot);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+  }
+  .msg.user .msg-bubble {
+    background: var(--bubble-user);
+    color: white;
+    border-bottom-left-radius: 18px;
+    border-bottom-right-radius: 4px;
+    box-shadow: 0 3px 14px var(--brand-blue-glow);
+  }
+
+  /* ══════════════════════════════════════════
+     QUICK REPLY BUTTONS
+  ══════════════════════════════════════════ */
+  .quick-replies {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    padding: 6px 12px 8px 50px;
+    animation: msg-in 0.32s cubic-bezier(.34,1.56,.64,1) both;
+  }
+
+  .qr-btn {
+    padding: 7px 15px;
+    border-radius: 999px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    line-height: 1;
+    transition: transform 0.18s cubic-bezier(.34,1.56,.64,1),
+                background 0.15s, color 0.15s, box-shadow 0.15s;
+    white-space: nowrap;
+  }
+
+  /* Odd buttons → blue outline */
+  .qr-btn:nth-child(odd) {
+    border: 2px solid var(--brand-blue);
+    background: white;
+    color: var(--brand-blue);
+  }
+  .qr-btn:nth-child(odd):hover {
+    background: var(--brand-blue);
+    color: white;
+    transform: scale(1.06);
+    box-shadow: 0 4px 14px var(--brand-blue-glow);
+  }
+
+  /* Even buttons → yellow outline */
+  .qr-btn:nth-child(even) {
+    border: 2px solid var(--brand-yellow-dark);
+    background: white;
+    color: #7a5800;
+  }
+  .qr-btn:nth-child(even):hover {
+    background: var(--brand-yellow);
+    color: var(--brand-dark);
+    transform: scale(1.06);
+    box-shadow: 0 4px 14px var(--brand-yellow-glow);
+  }
+
+  /* ══════════════════════════════════════════
+     TYPING INDICATOR
+  ══════════════════════════════════════════ */
+  .typing-wrap {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    animation: msg-in 0.28s cubic-bezier(.34,1.56,.64,1) both;
+  }
+  .typing-dots {
+    background: white;
+    border-radius: 18px;
+    border-bottom-left-radius: 4px;
+    padding: 13px 16px;
+    display: flex;
+    gap: 5px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+  }
+  .typing-dots span {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    display: block;
+    animation: dot-bounce 1.2s ease-in-out infinite;
+  }
+  .typing-dots span:nth-child(1) { background: var(--brand-blue);   animation-delay: 0s; }
+  .typing-dots span:nth-child(2) { background: var(--brand-yellow);  animation-delay: 0.18s; }
+  .typing-dots span:nth-child(3) { background: var(--brand-blue);    animation-delay: 0.36s; }
+  @keyframes dot-bounce {
+    0%,60%,100% { transform: translateY(0); }
+    30%          { transform: translateY(-8px); }
+  }
+
+  /* ══════════════════════════════════════════
+     INPUT AREA
+  ══════════════════════════════════════════ */
+  .chat-input-wrap {
+    padding: 10px 12px 13px;
+    background: white;
+    border-top: 1.5px solid var(--border);
+    display: flex;
+    align-items: flex-end;
+    gap: 9px;
+    flex-shrink: 0;
+  }
+
+  #user-input {
+    flex: 1;
+    border: 2px solid var(--border);
+    border-radius: 14px;
+    padding: 10px 13px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text);
+    background: var(--bg);
+    resize: none;
+    outline: none;
+    min-height: 42px;
+    max-height: 100px;
+    line-height: 1.45;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  #user-input:focus {
+    border-color: var(--brand-blue);
+    box-shadow: 0 0 0 3px rgba(30,167,202,0.12);
+  }
+  #user-input::placeholder { color: #aac4cd; }
+
+  #send-btn {
+    width: 42px; height: 42px;
+    border-radius: 50%;
+    background: var(--brand-blue);
+    border: none;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    box-shadow: 0 4px 14px var(--brand-blue-glow);
+    transition: transform 0.2s cubic-bezier(.34,1.56,.64,1),
+                background 0.15s, box-shadow 0.15s;
+  }
+  #send-btn:hover {
+    background: var(--brand-blue-dark);
+    transform: scale(1.1);
+    box-shadow: 0 6px 18px var(--brand-blue-glow);
+  }
+  #send-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+  #send-btn svg { width: 17px; height: 17px; fill: white; }
+
+  /* ── footer label ── */
+  .chat-footer {
+    text-align: center;
+    font-size: 11px;
+    font-weight: 700;
+    color: #b0cdd6;
+    padding: 3px 0 5px;
+    letter-spacing: 0.04em;
+  }
+
+  /* ══════════════════════════════════════════
+     FILE PREVIEW (upload thumbnails)
+  ══════════════════════════════════════════ */
+  .file-preview-wrap {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 6px 12px 0;
+  }
+  .file-thumb {
+    position: relative;
+    width: 54px; height: 54px;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 2px solid var(--border);
+    flex-shrink: 0;
+  }
+  .file-thumb img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+  }
+  .file-thumb .remove-file {
+    position: absolute;
+    top: 2px; right: 2px;
+    width: 16px; height: 16px;
+    background: rgba(0,0,0,0.55);
+    border-radius: 50%;
+    border: none;
+    color: white;
+    font-size: 10px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    line-height: 1;
+  }
+
+  /* attach button */
+  #attach-btn {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    background: white;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: border-color 0.15s, background 0.15s, transform 0.18s;
+    margin-bottom: 3px;
+  }
+  #attach-btn:hover {
+    border-color: var(--brand-yellow-dark);
+    background: #fffbee;
+    transform: scale(1.08);
+  }
+  #attach-btn svg { width: 17px; height: 17px; fill: var(--text-muted); }
+  #attach-btn:hover svg { fill: var(--brand-yellow-dark); }
+  #file-input { display: none; }
+</style>
+</head>
+<body>
+
+<!-- ════════════ FLOATING BUTTON ════════════ -->
+<button id="chat-toggle" aria-label="Open chat">
+  <svg class="icon-chat" viewBox="0 0 24 24">
+    <path d="M20 2H4C2.9 2 2 2.9 2 4v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 10H6v-2h12v2zm0-3H6V7h12v2z"/>
+  </svg>
+  <svg class="icon-close" viewBox="0 0 24 24">
+    <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+  </svg>
+</button>
+
+<!-- ════════════ CHAT WIDGET ════════════════ -->
+<div id="chat-widget" role="dialog" aria-label="Chat with Bug & Bear's Kitchen">
+
+  <!-- Header -->
+  <div class="chat-header">
+    <div class="header-row">
+      <div class="bot-avatar">🐻</div>
+      <div class="header-info">
+        <h2>Bug & Bear's Kitchen</h2>
+        <p><span class="status-dot"></span>Cookie Inquiries · Online now</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Messages -->
+  <div id="messages"></div>
+
+  <!-- File previews (shown above input when files selected) -->
+  <div class="file-preview-wrap" id="file-preview"></div>
+
+  <!-- Input -->
+  <div class="chat-input-wrap">
+    <button id="attach-btn" aria-label="Attach image">
+      <svg viewBox="0 0 24 24">
+        <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/>
+      </svg>
+    </button>
+    <input type="file" id="file-input" accept="image/png,image/jpeg,image/jpg,image/webp" multiple />
+    <textarea id="user-input" rows="1" placeholder="Type your message…" aria-label="Your message"></textarea>
+    <button id="send-btn" aria-label="Send">
+      <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+    </button>
+  </div>
+  <div class="chat-footer">powered by n8n ⚡</div>
+</div>
+
+<script>
+/* ════════════════════════════════════════════
+   CONFIG  ← only edit this section
+════════════════════════════════════════════ */
+const N8N_WEBHOOK_URL = 'WEBHOOK_URL';           // ← your n8n webhook URL
+const SESSION_ID      = 'bb_' + Math.random().toString(36).slice(2, 10);
+const MAX_FILES       = 3;
+const ALLOWED_TYPES   = ['image/png','image/jpeg','image/jpg','image/webp'];
+
+/* ════════════════════════════════════════════
+   STATE
+════════════════════════════════════════════ */
+let isOpen    = false;
+let isWaiting = false;
+let pendingFiles = [];   // { file, dataUrl }
+
+/* ════════════════════════════════════════════
+   DOM REFS
+════════════════════════════════════════════ */
+const toggleBtn   = document.getElementById('chat-toggle');
+const widget      = document.getElementById('chat-widget');
+const messagesEl  = document.getElementById('messages');
+const inputEl     = document.getElementById('user-input');
+const sendBtn     = document.getElementById('send-btn');
+const attachBtn   = document.getElementById('attach-btn');
+const fileInput   = document.getElementById('file-input');
+const filePreview = document.getElementById('file-preview');
+
+/* ════════════════════════════════════════════
+   TOGGLE
+════════════════════════════════════════════ */
+toggleBtn.addEventListener('click', () => {
+  isOpen = !isOpen;
+  widget.classList.toggle('visible', isOpen);
+  toggleBtn.classList.toggle('open', isOpen);
+  if (isOpen && messagesEl.children.length === 0) greetUser();
+  if (isOpen) setTimeout(() => inputEl.focus(), 320);
+});
+
+/* ════════════════════════════════════════════
+   GREETING
+════════════════════════════════════════════ */
+function greetUser() {
+  addBotMessage(
+    "Hi! Welcome to Bug & Bear's Kitchen 👋\nHow can I help you today? We offer cookies, custom orders, and cookie design classes.",
+    ["Our Menu 🍪", "Custom Orders 🎂", "Cookie Classes 🎨", "Contact Us 📩"]
+  );
+}
+
+/* ════════════════════════════════════════════
+   ADD BOT MESSAGE
+   n8n response shape:
+   { "reply": "text", "buttons": ["Label A", "Label B"] }
+   buttons is optional
+════════════════════════════════════════════ */
+function addBotMessage(text, buttons = []) {
+  const wrapper = document.createElement('div');
+
+  // bubble
+  const row = document.createElement('div');
+  row.className = 'msg bot';
+  row.innerHTML = `
+    <div class="msg-avatar">🐻</div>
+    <div class="msg-bubble">${formatText(text)}</div>
+  `;
+  wrapper.appendChild(row);
+
+  // quick replies
+  if (buttons.length > 0) {
+    const qr = document.createElement('div');
+    qr.className = 'quick-replies';
+    buttons.forEach(label => {
+      const btn = document.createElement('button');
+      btn.className = 'qr-btn';
+      btn.textContent = label;
+      btn.addEventListener('click', () => {
+        clearQuickReplies();
+        sendMessage(label);
+      });
+      qr.appendChild(btn);
+    });
+    wrapper.appendChild(qr);
+  }
+
+  messagesEl.appendChild(wrapper);
+  scrollToBottom();
+}
+
+/* ════════════════════════════════════════════
+   ADD USER MESSAGE
+════════════════════════════════════════════ */
+function addUserMessage(text, images = []) {
+  const row = document.createElement('div');
+  row.className = 'msg user';
+
+  let imgHtml = '';
+  if (images.length > 0) {
+    imgHtml = `<div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:6px;justify-content:flex-end">
+      ${images.map(src => `<img src="${src}" style="width:72px;height:72px;object-fit:cover;border-radius:10px;border:2px solid rgba(255,255,255,0.4)">`).join('')}
+    </div>`;
+  }
+
+  row.innerHTML = `
+    <div class="msg-bubble" style="max-width:80%">
+      ${imgHtml}
+      ${text ? `<span>${escapeHtml(text)}</span>` : ''}
+    </div>
+    <div class="msg-avatar">😊</div>
+  `;
+  messagesEl.appendChild(row);
+  scrollToBottom();
+}
+
+/* ════════════════════════════════════════════
+   TYPING INDICATOR
+════════════════════════════════════════════ */
+function showTyping() {
+  const el = document.createElement('div');
+  el.id = 'typing';
+  el.className = 'typing-wrap';
+  el.innerHTML = `
+    <div class="msg-avatar">🐻</div>
+    <div class="typing-dots"><span></span><span></span><span></span></div>
+  `;
+  messagesEl.appendChild(el);
+  scrollToBottom();
+}
+function hideTyping() {
+  document.getElementById('typing')?.remove();
+}
+
+/* ════════════════════════════════════════════
+   QUICK REPLIES — clear old ones on new send
+════════════════════════════════════════════ */
+function clearQuickReplies() {
+  messagesEl.querySelectorAll('.quick-replies').forEach(el => el.remove());
+}
+
+/* ════════════════════════════════════════════
+   FILE HANDLING
+════════════════════════════════════════════ */
+attachBtn.addEventListener('click', () => fileInput.click());
+
+fileInput.addEventListener('change', async () => {
+  const files = Array.from(fileInput.files).slice(0, MAX_FILES - pendingFiles.length);
+  for (const file of files) {
+    if (!ALLOWED_TYPES.includes(file.type)) continue;
+    const dataUrl = await readFileAsDataUrl(file);
+    pendingFiles.push({ file, dataUrl });
+  }
+  fileInput.value = '';
+  renderFilePreviews();
+});
+
+function readFileAsDataUrl(file) {
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload  = () => res(r.result);
+    r.onerror = rej;
+    r.readAsDataURL(file);
+  });
+}
+
+function renderFilePreviews() {
+  filePreview.innerHTML = '';
+  pendingFiles.forEach((item, i) => {
+    const thumb = document.createElement('div');
+    thumb.className = 'file-thumb';
+    thumb.innerHTML = `
+      <img src="${item.dataUrl}" alt="preview">
+      <button class="remove-file" data-i="${i}" aria-label="Remove">✕</button>
+    `;
+    filePreview.appendChild(thumb);
+  });
+  filePreview.querySelectorAll('.remove-file').forEach(btn => {
+    btn.addEventListener('click', () => {
+      pendingFiles.splice(+btn.dataset.i, 1);
+      renderFilePreviews();
+    });
+  });
+}
+
+/* ════════════════════════════════════════════
+   SEND MESSAGE
+════════════════════════════════════════════ */
+async function sendMessage(text) {
+  text = text ?? inputEl.value;
+  if (!text.trim() && pendingFiles.length === 0) return;
+  if (isWaiting) return;
+
+  clearQuickReplies();
+
+  const imagesToSend = pendingFiles.map(f => f.dataUrl);
+  addUserMessage(text.trim(), imagesToSend);
+
+  inputEl.value = '';
+  autoResize();
+  pendingFiles = [];
+  renderFilePreviews();
+
+  isWaiting = true;
+  sendBtn.disabled = true;
+  showTyping();
+
+  try {
+    // Build payload
+    const payload = {
+      sessionId: SESSION_ID,
+      message:   text.trim(),
+    };
+
+    // Attach images as base64 if any
+    if (imagesToSend.length > 0) {
+      payload.images = imagesToSend.map(src => ({
+        type: 'base64',
+        data: src.split(',')[1],
+        mediaType: pendingFiles[0]?.file?.type || 'image/jpeg'
+      }));
+    }
+
+    const res = await fetch(N8N_WEBHOOK_URL, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify(payload)
+    });
+
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+    const data = await res.json();
+
+    /*
+      Expected n8n response:
+      {
+        "reply":   "Your response text here",
+        "buttons": ["Option A", "Option B", "Option C"]   ← optional
+      }
+
+      If your AI node uses different field names, add them as fallbacks below.
+    */
+    const reply   = data.reply   || data.text   || data.output || "Got it! 🍪";
+    const buttons = data.buttons || data.options || [];
+
+    hideTyping();
+    addBotMessage(reply, buttons);
+
+  } catch (err) {
+    hideTyping();
+    addBotMessage("Oops! 😅 Something went wrong. Please try again.", ["Try again 🔄"]);
+    console.error('[Bug & Bear Chat]', err);
+  } finally {
+    isWaiting = false;
+    sendBtn.disabled = false;
+    inputEl.focus();
+  }
+}
+
+/* ════════════════════════════════════════════
+   INPUT LISTENERS
+════════════════════════════════════════════ */
+sendBtn.addEventListener('click', () => sendMessage(inputEl.value));
+
+inputEl.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage(inputEl.value);
+  }
+});
+
+inputEl.addEventListener('input', autoResize);
+
+function autoResize() {
+  inputEl.style.height = 'auto';
+  inputEl.style.height = Math.min(inputEl.scrollHeight, 100) + 'px';
+}
+
+/* ════════════════════════════════════════════
+   HELPERS
+════════════════════════════════════════════ */
+function scrollToBottom() {
+  setTimeout(() => { messagesEl.scrollTop = messagesEl.scrollHeight; }, 50);
+}
+
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+// Preserve newlines and escape HTML
+function formatText(str) {
+  return escapeHtml(str).replace(/\n/g, '<br>');
+}
+</script>
+</body>
+</html>
