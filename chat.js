@@ -323,6 +323,10 @@
     if (bullets.length >= 2 && bullets.length <= 6)
       return bullets.map(m => m[1].trim());
 
+    // Yes / No takes priority over everything else
+    const yesNoFirst = text.match(/\(?\b(Yes|No|Maybe)\b\s+or\s+\b(Yes|No|Maybe)\b\)?/i);
+    if (yesNoFirst) return [yesNoFirst[1].trim(), yesNoFirst[2].trim()];
+
     const boldOr = text.match(/\*\*([^*]+)\*\*\s+or\s+(?:an?\s+)?\*\*([^*]+)\*\*/i);
     if (boldOr) return [boldOr[1].trim(), boldOr[2].trim()];
 
@@ -333,8 +337,6 @@
     const withDesc = text.match(/\b([A-Z][A-Za-z\s]{0,25}?)(?:\s*\([^)]*\))?\s+or\s+([A-Z][A-Za-z\s]{0,25}?)(?:\s*\([^)]*\))?[\?\.]?\s*$/);
     if (withDesc) return [withDesc[1].trim(), withDesc[2].trim()];
 
-    const yesNo = text.match(/\(?\b(Yes|No|Maybe)\b\s+or\s+\b(Yes|No|Maybe)\b\)?/i);
-    if (yesNo) return [yesNo[1].trim(), yesNo[2].trim()];
 
     const genericOr = text.match(/\b([A-Za-z][A-Za-z\s\-\/]{1,30}?)\s+or\s+([A-Za-z][A-Za-z\s\-\/]{1,30}?)[\?\!\.]?\s*$/);
     if (genericOr) {
