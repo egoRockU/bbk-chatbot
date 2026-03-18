@@ -23,6 +23,7 @@
     buttonColor:    "#007D99",
     accentColor:    "#FAD02C",
     maxImages:      3,
+    welcomeButtons: [],                          // buttons shown with the welcome message
   };
 
   // ─── CSS ───────────────────────────────────────────────────────────────────
@@ -475,7 +476,7 @@
   BBChatWidget.prototype._open = function () {
     document.getElementById('bbchat-btn').style.display = 'none';
     document.getElementById('bbchat-container').classList.add('bbchat-open');
-    if (this.messages.length === 0) this._addMessage(this.cfg.welcomeMessage, 'bot');
+    if (this.messages.length === 0) this._addMessage(this.cfg.welcomeMessage, 'bot', [], this.cfg.welcomeButtons);
   };
 
   BBChatWidget.prototype._close = function () {
@@ -744,6 +745,7 @@
      * @param {string} [options.buttonColor]  Toggle button bg (default #007D99)
      * @param {string} [options.accentColor]  Yellow accent    (default #FAD02C)
      * @param {number} [options.maxImages]    Max file uploads (default 3)
+     * @param {Array}  [options.welcomeButtons] Buttons shown with the welcome message e.g. ['Custom Cookies 🍪']
      */
     init: function (options) {
       if (document.readyState === 'loading') {
