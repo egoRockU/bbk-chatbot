@@ -326,6 +326,10 @@
     const boldOr = text.match(/\*\*([^*]+)\*\*\s+or\s+(?:an?\s+)?\*\*([^*]+)\*\*/i);
     if (boldOr) return [boldOr[1].trim(), boldOr[2].trim()];
 
+    // Pattern 3b: **Option A or Option B** (both inside one bold block)
+    const boldSingle = text.match(/\*\*([A-Za-z][A-Za-z\s]{1,25}?)\s+or\s+([A-Za-z][A-Za-z\s]{1,25}?)\*\*/i);
+    if (boldSingle) return [boldSingle[1].trim(), boldSingle[2].trim()];
+
     const withDesc = text.match(/\b([A-Z][A-Za-z\s]{0,25}?)(?:\s*\([^)]*\))?\s+or\s+([A-Z][A-Za-z\s]{0,25}?)(?:\s*\([^)]*\))?[\?\.]?\s*$/);
     if (withDesc) return [withDesc[1].trim(), withDesc[2].trim()];
 
@@ -718,7 +722,7 @@
 
       setTimeout(() => {
         this._hideTyping();
-        const looksLikeError = botText && /error/.test(botText);
+        const looksLikeError = botText && /Error/.test(botText);
         if (n8nError) {
           this._addMessage('⚠️ Something went wrong in the workflow:\n' + n8nError, 'bot', [], ['🔄 Try Again']);
         } else if (looksLikeError) {
