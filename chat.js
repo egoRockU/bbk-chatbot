@@ -347,6 +347,7 @@
     this.messages     = [];
     this.attachedFiles = [];
     this.sessionId    = null;
+    this.lastMessage  = '';
 
     // Validate required field
     if (!this.cfg.webhookUrl) {
@@ -555,7 +556,11 @@
 
           btn.addEventListener('click', () => {
             messagesEl.querySelectorAll('.bbchat-qr').forEach(el => el.remove());
-            document.getElementById('bbchat-input').value = label;
+            if (label === '🔄 Try Again' && self.lastMessage) {
+              document.getElementById('bbchat-input').value = self.lastMessage;
+            } else {
+              document.getElementById('bbchat-input').value = label;
+            }
             self._send();
           });
 
@@ -659,6 +664,7 @@
     if (!message && this.attachedFiles.length === 0) return;
 
     const filesToSend = [...this.attachedFiles];
+    this.lastMessage = message;  // store for retry
     this._addMessage(message, 'user', filesToSend);
     input.value = '';
     this._clearFiles();
@@ -706,9 +712,22 @@
       const botText    = this._extractResponse(data);
       const botButtons = Array.isArray(data.buttons) ? data.buttons : [];
 
+      // Detect n8n workflow-level errors
+      const n8nError = data.error || data.errorMessage ||
+        (data.message && /error|fail|exception/i.test(data.message) ? data.message : null);
+
       setTimeout(() => {
         this._hideTyping();
-        this._addMessage(botText || "I received your message but couldn't process the response.", 'bot', [], botButtons);
+        const looksLikeError = botText && /error/.test(botText);
+        if (n8nError) {
+          this._addMessage('⚠️ Something went wrong in the workflow:\n' + n8nError, 'bot', [], ['🔄 Try Again']);
+        } else if (looksLikeError) {
+          this._addMessage(botText, 'bot', [], ['🔄 Try Again']);
+        } else if (botText) {
+          this._addMessage(botText, 'bot', [], botButtons);
+        } else {
+          this._addMessage("I received your message but couldn't process the response.", 'bot', [], ['🔄 Try Again']);
+        }
         [input, sendBtn, attachBtn].forEach(el => { el.disabled = false; el.style.opacity = '1'; });
         input.focus();
       }, 500);
@@ -722,7 +741,7 @@
         } else {
           msg += 'Error: ' + err.message;
         }
-        this._addMessage(msg, 'bot');
+        this._addMessage(msg, 'bot', [], ['🔄 Try Again']);
         [input, sendBtn, attachBtn].forEach(el => { el.disabled = false; el.style.opacity = '1'; });
         input.focus();
       }, 500);

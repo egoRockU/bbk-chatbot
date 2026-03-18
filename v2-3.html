@@ -485,7 +485,8 @@
       position:       'bottom-right',
       botName:        "Bug & Bear's Kitchen",
       welcomeMessage: "Hi! Welcome to Bug & Bear's Kitchen 👋\nHow can I help you today? We offer cookies, custom orders, and cookie design classes.",
-      placeholder:    ''
+      placeholder:    '',
+      welcomeButtons: ['Custom Cookies 🍪']
     };
 
     // ==========================================
@@ -494,6 +495,7 @@
     let messages      = [];
     let attachedFiles = [];
     let isMinimized   = false;
+    let lastMessage   = '';
     const MAX_IMAGES    = 3;
     const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png'];
 
@@ -586,7 +588,7 @@
     function openChat() {
       document.getElementById('chat-widget-button').style.display = 'none';
       document.getElementById('chat-widget-container').classList.add('open');
-      if (messages.length === 0) addMessage(config.welcomeMessage, 'bot');
+      if (messages.length === 0) addMessage(config.welcomeMessage, 'bot', [], config.welcomeButtons);
     }
 
     function closeChat() {
@@ -733,8 +735,11 @@
             btn.textContent = label;
             btn.addEventListener('click', () => {
               document.querySelectorAll('.quick-replies').forEach(el => el.remove());
-              // Put the label in the input and send
-              document.getElementById('chat-input').value = label;
+              if (label === '🔄 Try Again' && lastMessage) {
+                document.getElementById('chat-input').value = lastMessage;
+              } else {
+                document.getElementById('chat-input').value = label;
+              }
               sendMessage();
             });
             qrWrap.appendChild(btn);
@@ -849,6 +854,7 @@
       if (!message && attachedFiles.length === 0) return;
 
       const filesToSend = [...attachedFiles];
+      lastMessage = message;  // store for retry
       addMessage(message, 'user', filesToSend);
       input.value = '';
       removeFile();
@@ -908,12 +914,21 @@
         // buttons field is optional — n8n can return { output: "...", buttons: [...] }
         const botButtons  = Array.isArray(data.buttons) ? data.buttons : [];
 
+        // Detect n8n workflow-level errors
+        const n8nError = data.error || data.errorMessage ||
+          (data.message && /error|fail|exception/i.test(data.message) ? data.message : null);
+
         setTimeout(() => {
           hideTypingIndicator();
-          if (botResponse) {
+          const looksLikeError = botResponse && /error/.test(botResponse);
+          if (n8nError) {
+            addMessage('⚠️ Something went wrong in the workflow:\n' + n8nError, 'bot', [], ['🔄 Try Again']);
+          } else if (looksLikeError) {
+            addMessage(botResponse, 'bot', [], ['🔄 Try Again']);
+          } else if (botResponse) {
             addMessage(botResponse, 'bot', [], botButtons);
           } else {
-            addMessage("I received your message but couldn't process the response.", 'bot');
+            addMessage("I received your message but couldn't process the response.", 'bot', [], ['🔄 Try Again']);
           }
           input.disabled = false;
           sendButton.disabled = false;
@@ -933,7 +948,7 @@
           } else {
             msg += 'Error: ' + error.message;
           }
-          addMessage(msg, 'bot');
+          addMessage(msg, 'bot', [], ['🔄 Try Again']);
           input.disabled = false;
           sendButton.disabled = false;
           attachButton.disabled = false;
