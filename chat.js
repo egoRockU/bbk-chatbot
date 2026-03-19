@@ -331,6 +331,10 @@
     if (withDesc) return [withDesc[1].trim(), withDesc[2].trim()];
 
 
+    // Pattern 4b: slash-separated options in parens e.g. (Yes/No) or (A/B/C)
+    const slashOpts = text.match(/\(([A-Za-z][A-Za-z\s\-]*(?:\/[A-Za-z][A-Za-z\s\-]*)+)\)/);
+    if (slashOpts) return slashOpts[1].split('/').map(s => s.trim());
+
     // Pattern 5: explicit Yes / No anywhere
     const yesNo = text.match(/\(?\b(Yes|No|Maybe)\b\s+or\s+\b(Yes|No|Maybe)\b\)?/i);
     if (yesNo) return [yesNo[1].trim(), yesNo[2].trim()];
