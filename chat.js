@@ -208,6 +208,80 @@
 
     .bbchat-file-input { display: none; }
     .bbchat-file-att   { margin-top: 6px; font-size: 12px; opacity: 0.9; }
+    .dp-wrap {
+      background: white; border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.10);
+      padding: 14px; width: 260px;
+      animation: bbchat-slide 0.3s; font-family: inherit;
+    }
+    .dp-header {
+      display: flex; align-items: center;
+      justify-content: space-between; margin-bottom: 10px;
+    }
+    .dp-header span { font-size: 14px; font-weight: 700; color: #2C3E50; }
+    .dp-nav {
+      background: none; border: none; cursor: pointer;
+      width: 28px; height: 28px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      color: #5BA4B5; font-size: 16px; transition: background 0.15s;
+    }
+    .dp-nav:hover { background: #e8f4f7; }
+    .dp-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
+    .dp-day-label { text-align: center; font-size: 11px; font-weight: 700; color: #999; padding: 2px 0 5px; }
+    .dp-day {
+      text-align: center; padding: 6px 2px; border-radius: 6px;
+      font-size: 13px; cursor: pointer; border: none; background: none;
+      color: #2C3E50; font-family: inherit; transition: background 0.12s, color 0.12s;
+    }
+    .dp-day:hover:not(.dp-empty):not(.dp-disabled) { background: #e8f4f7; color: #5BA4B5; }
+    .dp-day.dp-today  { font-weight: 800; color: #5BA4B5; }
+    .dp-day.dp-selected { background: #5BA4B5; color: white; font-weight: 700; }
+    .dp-day.dp-disabled { color: #ccc; cursor: not-allowed; }
+    .dp-day.dp-empty  { cursor: default; }
+    .dp-confirm {
+      margin-top: 10px; width: 100%; padding: 8px;
+      background: #5BA4B5; color: white; border: none;
+      border-radius: 8px; font-family: inherit; font-size: 13px;
+      font-weight: 700; cursor: pointer; transition: background 0.15s; display: none;
+    }
+    .dp-confirm:hover { background: #4A93A4; }
+    .dp-confirm.show  { display: block; }
+    .tp-wrap {
+      background: white; border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.10);
+      padding: 14px; width: 240px;
+      animation: bbchat-slide 0.3s; font-family: inherit;
+    }
+    .tp-label { font-size: 13px; font-weight: 700; color: #2C3E50; margin-bottom: 12px; }
+    .tp-row { display: flex; align-items: center; gap: 6px; margin-bottom: 12px; }
+    .tp-field { display: flex; flex-direction: column; gap: 3px; flex: 1; }
+    .tp-field label { font-size: 10px; font-weight: 700; color: #999; letter-spacing: 0.05em; text-transform: uppercase; }
+    .tp-select {
+      width: 100%; padding: 8px 10px; border: 2px solid #e0eef1;
+      border-radius: 8px; font-family: inherit; font-size: 14px; font-weight: 600;
+      color: #2C3E50; background: white; cursor: pointer; outline: none;
+      appearance: none; -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24'%3E%3Cpath fill='%235BA4B5' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 8px center;
+      transition: border-color 0.15s;
+    }
+    .tp-select:focus { border-color: #5BA4B5; }
+    .tp-ampm-wrap { display: flex; border-radius: 8px; overflow: hidden; border: 2px solid #e0eef1; margin-top: 16px; }
+    .tp-ampm-btn {
+      flex: 1; padding: 8px 0; border: none; background: white;
+      font-family: inherit; font-size: 13px; font-weight: 700; color: #aaa;
+      cursor: pointer; transition: background 0.15s, color 0.15s;
+    }
+    .tp-ampm-btn.active { background: #5BA4B5; color: white; }
+    .tp-ampm-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+    .tp-confirm {
+      margin-top: 12px; width: 100%; padding: 8px; background: #5BA4B5;
+      color: white; border: none; border-radius: 8px; font-family: inherit;
+      font-size: 13px; font-weight: 700; cursor: pointer; transition: background 0.15s;
+    }
+    .tp-confirm:hover { background: #4A93A4; }
+
+
 
     @media (max-width: 768px) {
       #bbchat-container {
@@ -509,7 +583,14 @@
     bubble.className = 'bbchat-bubble';
     if (sender === 'user') bubble.style.backgroundColor = this.cfg.primaryColor;
 
-    if (text) bubble.innerHTML = parseMarkdown(text);
+    // Detect [datepicker] / [timepicker] triggers from n8n
+    const hasDatePicker = sender === 'bot' && text && /\[datepicker\]/i.test(text);
+    const hasTimePicker = sender === 'bot' && text && /\[timepicker\]/i.test(text);
+    const cleanText = text
+      ? text.replace(/\[datepicker\]/gi, '').replace(/\[timepicker\]/gi, '').trim()
+      : text;
+
+    if (cleanText) bubble.innerHTML = parseMarkdown(cleanText);
 
     if (files.length > 0) {
       const grid = document.createElement('div');
@@ -534,6 +615,20 @@
 
     msgDiv.appendChild(bubble);
     messagesEl.appendChild(msgDiv);
+
+    // Render inline date picker if triggered
+    if (hasDatePicker) {
+      const dpContainer = document.createElement('div');
+      messagesEl.appendChild(dpContainer);
+      this._renderDatePicker(dpContainer);
+    }
+
+    // Render inline time picker if triggered
+    if (hasTimePicker) {
+      const tpContainer = document.createElement('div');
+      messagesEl.appendChild(tpContainer);
+      this._renderTimePicker(tpContainer);
+    }
 
     // Quick reply buttons
     if (sender === 'bot') {
@@ -662,6 +757,212 @@
   };
 
   // ─── SEND MESSAGE ──────────────────────────────────────────────────────────
+
+
+  // ─── INLINE TIME PICKER ────────────────────────────────────────────────────
+  BBChatWidget.prototype._renderTimePicker = function (anchorEl) {
+    const self = this;
+    const amHours = ['8','9','10','11','12'];
+    const pmHours = ['1','2','3','4','5'];
+    const minutes = ['00','15','30','45'];
+    let selHour = '8', selMin = '00', selAmpm = 'AM';
+
+    const wrap = document.createElement('div');
+    wrap.className = 'tp-wrap';
+
+    const title = document.createElement('div');
+    title.className = 'tp-label';
+    title.textContent = 'Select a time';
+    wrap.appendChild(title);
+
+    const row = document.createElement('div');
+    row.className = 'tp-row';
+
+    // Hour dropdown
+    const hourField = document.createElement('div');
+    hourField.className = 'tp-field';
+    const hourLabel = document.createElement('label');
+    hourLabel.textContent = 'Hour';
+    const hourSel = document.createElement('select');
+    hourSel.className = 'tp-select';
+    amHours.forEach(h => {
+      const opt = document.createElement('option');
+      opt.value = h; opt.textContent = h;
+      if (h === selHour) opt.selected = true;
+      hourSel.appendChild(opt);
+    });
+    hourSel.addEventListener('change', () => { selHour = hourSel.value; updateConfirm(); });
+    hourField.appendChild(hourLabel);
+    hourField.appendChild(hourSel);
+
+    // Minute dropdown
+    const minField = document.createElement('div');
+    minField.className = 'tp-field';
+    const minLabel = document.createElement('label');
+    minLabel.textContent = 'Minute';
+    const minSel = document.createElement('select');
+    minSel.className = 'tp-select';
+    minutes.forEach(m => {
+      const opt = document.createElement('option');
+      opt.value = m; opt.textContent = m;
+      if (m === selMin) opt.selected = true;
+      minSel.appendChild(opt);
+    });
+    minSel.addEventListener('change', () => { selMin = minSel.value; updateConfirm(); });
+    minField.appendChild(minLabel);
+    minField.appendChild(minSel);
+
+    row.appendChild(hourField);
+    row.appendChild(minField);
+    wrap.appendChild(row);
+
+    // AM / PM toggle — switching updates hour options
+    const ampmWrap = document.createElement('div');
+    ampmWrap.className = 'tp-ampm-wrap';
+    const amBtn = document.createElement('button');
+    amBtn.className = 'tp-ampm-btn active';
+    amBtn.textContent = 'AM';
+    const pmBtn = document.createElement('button');
+    pmBtn.className = 'tp-ampm-btn';
+    pmBtn.textContent = 'PM';
+
+    function updateHourOptions(ampm) {
+      hourSel.innerHTML = '';
+      (ampm === 'AM' ? amHours : pmHours).forEach(h => {
+        const opt = document.createElement('option');
+        opt.value = h; opt.textContent = h;
+        hourSel.appendChild(opt);
+      });
+      selHour = hourSel.value;
+      updateConfirm();
+    }
+
+    amBtn.addEventListener('click', () => {
+      selAmpm = 'AM';
+      amBtn.classList.add('active'); pmBtn.classList.remove('active');
+      updateHourOptions('AM');
+    });
+    pmBtn.addEventListener('click', () => {
+      selAmpm = 'PM';
+      pmBtn.classList.add('active'); amBtn.classList.remove('active');
+      updateHourOptions('PM');
+    });
+
+    ampmWrap.appendChild(amBtn);
+    ampmWrap.appendChild(pmBtn);
+    wrap.appendChild(ampmWrap);
+
+    const confirm = document.createElement('button');
+    confirm.className = 'tp-confirm';
+
+    function updateConfirm() {
+      confirm.textContent = 'Confirm — ' + selHour + ':' + selMin + ' ' + selAmpm;
+    }
+    updateConfirm();
+
+    confirm.addEventListener('click', () => {
+      wrap.remove();
+      document.getElementById('bbchat-input').value = selHour + ':' + selMin + ' ' + selAmpm;
+      self._send();
+    });
+
+    wrap.appendChild(confirm);
+    anchorEl.appendChild(wrap);
+  };
+
+  // ─── INLINE DATE PICKER ────────────────────────────────────────────────────
+  BBChatWidget.prototype._renderDatePicker = function (anchorEl) {
+    const self  = this;
+    const today = new Date();
+    let viewYear  = today.getFullYear();
+    let viewMonth = today.getMonth();
+    let selected  = null;
+
+    const DAYS   = ['Su','Mo','Tu','We','Th','Fr','Sa'];
+    const MONTHS = ['January','February','March','April','May','June',
+                    'July','August','September','October','November','December'];
+
+    const wrap = document.createElement('div');
+    wrap.className = 'dp-wrap';
+
+    function build() {
+      wrap.innerHTML = '';
+
+      const header = document.createElement('div');
+      header.className = 'dp-header';
+
+      const prev = document.createElement('button');
+      prev.className = 'dp-nav';
+      prev.innerHTML = '&#8249;';
+      prev.onclick = () => { viewMonth--; if (viewMonth < 0) { viewMonth = 11; viewYear--; } build(); };
+
+      const label = document.createElement('span');
+      label.textContent = MONTHS[viewMonth] + ' ' + viewYear;
+
+      const next = document.createElement('button');
+      next.className = 'dp-nav';
+      next.innerHTML = '&#8250;';
+      next.onclick = () => { viewMonth++; if (viewMonth > 11) { viewMonth = 0; viewYear++; } build(); };
+
+      header.appendChild(prev); header.appendChild(label); header.appendChild(next);
+      wrap.appendChild(header);
+
+      const grid = document.createElement('div');
+      grid.className = 'dp-grid';
+
+      DAYS.forEach(d => {
+        const lbl = document.createElement('div');
+        lbl.className = 'dp-day-label';
+        lbl.textContent = d;
+        grid.appendChild(lbl);
+      });
+
+      const firstDay    = new Date(viewYear, viewMonth, 1).getDay();
+      const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+      const todayMid    = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
+      for (let i = 0; i < firstDay; i++) {
+        const e = document.createElement('div');
+        e.className = 'dp-day dp-empty';
+        grid.appendChild(e);
+      }
+
+      for (let d = 1; d <= daysInMonth; d++) {
+        const btn      = document.createElement('button');
+        btn.className  = 'dp-day';
+        btn.textContent = d;
+        const cellDate = new Date(viewYear, viewMonth, d);
+
+        if (cellDate < todayMid) {
+          btn.classList.add('dp-disabled');
+        } else {
+          if (cellDate.toDateString() === todayMid.toDateString()) btn.classList.add('dp-today');
+          if (selected && cellDate.toDateString() === selected.toDateString()) btn.classList.add('dp-selected');
+          btn.onclick = () => { selected = cellDate; build(); };
+        }
+        grid.appendChild(btn);
+      }
+      wrap.appendChild(grid);
+
+      const confirm = document.createElement('button');
+      confirm.className = 'dp-confirm' + (selected ? ' show' : '');
+      confirm.textContent = selected
+        ? 'Confirm — ' + selected.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+        : 'Select a date';
+      confirm.onclick = () => {
+        if (!selected) return;
+        wrap.remove();
+        const formatted = selected.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+        document.getElementById('bbchat-input').value = formatted;
+        self._send();
+      };
+      wrap.appendChild(confirm);
+    }
+
+    build();
+    anchorEl.appendChild(wrap);
+  };
+
   BBChatWidget.prototype._send = async function () {
     const input      = document.getElementById('bbchat-input');
     const sendBtn    = document.getElementById('bbchat-send');
