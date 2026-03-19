@@ -391,11 +391,11 @@
   function extractAutoButtons(text) {
     const numbered = [...text.matchAll(/^\s*\d+[\.\)]\s*\*{0,2}(.+?)\*{0,2}\s*$/gm)];
     if (numbered.length >= 2 && numbered.length <= 6)
-      return numbered.map(m => m[1].trim());
+      return numbered.map(m => m[1].replace(/\*+/g, '').trim());
 
     const bullets = [...text.matchAll(/^\s*[-*]\s+\*{0,2}(.+?)\*{0,2}\s*$/gm)];
     if (bullets.length >= 2 && bullets.length <= 6)
-      return bullets.map(m => m[1].trim());
+      return bullets.map(m => m[1].replace(/\*+/g, '').trim());
 
     const boldOr = text.match(/\*\*([^*]+)\*\*\s+or\s+(?:an?\s+)?\*\*([^*]+)\*\*/i);
     if (boldOr) return [boldOr[1].trim(), boldOr[2].trim()];
