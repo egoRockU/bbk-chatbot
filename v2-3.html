@@ -574,20 +574,47 @@
     /* ── RESPONSIVE ───────────────────────────── */
     @media (max-width: 768px) {
       #chat-widget-container {
-        width: 100vw !important; height: 100vh !important;
+        width: 100vw !important;
+        /* Use dvh so container shrinks when keyboard opens */
+        height: 100vh !important;
+        height: 100dvh !important;
         bottom: 0 !important; right: 0 !important;
         top: 0 !important; left: 0 !important;
         border-radius: 0 !important;
+        /* Ensure flex column fills correctly */
+        display: flex !important;
+        flex-direction: column !important;
       }
       #chat-widget-button {
         bottom: 20px !important; right: 20px !important;
         width: 56px; height: 56px;
       }
-      #chat-widget-button svg  { width: 32px; height: 32px; }
+      #chat-widget-button svg { width: 32px; height: 32px; }
+
+      /* Messages area fills all available space, input stays at bottom */
+      .chat-messages {
+        flex: 1 1 0 !important;
+        min-height: 0 !important;
+        padding: 16px;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      /* Input always pinned, never clipped, never shrinks */
+      .chat-input-container {
+        flex-shrink: 0 !important;
+        padding: 10px 14px !important;
+        /* Push above iOS home indicator */
+        padding-bottom: max(10px, env(safe-area-inset-bottom)) !important;
+      }
+
+      /* File preview also never shrinks away */
+      .file-preview { flex-shrink: 0 !important; }
+
       .message-content { max-width: 90%; font-size: 14px; }
-      .chat-messages   { padding: 16px; }
-      .chat-input-container { padding: 12px 16px; }
-      #chat-input { font-size: 16px; }
+      #chat-input {
+        font-size: 16px; /* prevents iOS auto-zoom on focus */
+      }
     }
 
     @media (min-width: 769px) and (max-width: 1024px) {
@@ -598,7 +625,6 @@
       .message-content { max-width: 95%; font-size: 13px; padding: 10px 14px; }
       .chat-header h3  { font-size: 14px; }
       .header-buttons button { width: 28px; height: 28px; }
-      .chat-input-container  { padding: 10px 12px; gap: 8px; }
       .attach-button svg, .send-button svg { width: 20px; height: 20px; }
     }
   </style>
@@ -615,7 +641,7 @@
   <!-- Chat Widget Container -->
   <div id="chat-widget-container">
     <div class="chat-header" id="chat-header">
-      <h3 id="header-title">Bug &amp; Bear's Kitchen</h3>
+      <h3 id="header-title">BBK Cookie Wizard</h3>
       <div class="header-buttons">
         <button onclick="closeChat()" title="Close chat">
           <svg viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
@@ -664,8 +690,8 @@
       buttonColor:    '#007D99',
       buttonText:     'Chat',
       position:       'bottom-right',
-      botName:        "Bug & Bear's Kitchen",
-      welcomeMessage: "Hi! Welcome to Bug & Bear's Kitchen 👋\nHow can I help you today? We offer cookies, custom orders, and cookie design classes.",
+      botName:        "BBK Cookie Wizard",
+      welcomeMessage: "Hi! Welcome to BBK Cookie Wizard 👋\nHow can I help you today? We offer cookies, custom orders, and cookie design classes.",
       placeholder:    '',
       welcomeButtons: ['Custom Cookies 🍪']
     };

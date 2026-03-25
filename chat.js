@@ -281,12 +281,28 @@
 
     @media (max-width: 768px) {
       #bbchat-container {
-        width: 100vw !important; height: 100vh !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        height: 100dvh !important;
         bottom: 0 !important; right: 0 !important;
         top: 0 !important; left: 0 !important;
         border-radius: 0 !important;
+        display: flex !important;
+        flex-direction: column !important;
       }
       #bbchat-btn { bottom: 20px !important; right: 20px !important; }
+      .bbchat-messages {
+        flex: 1 1 0 !important;
+        min-height: 0 !important;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+      .bbchat-input-wrap {
+        flex-shrink: 0 !important;
+        padding: 10px 14px !important;
+        padding-bottom: max(10px, env(safe-area-inset-bottom)) !important;
+      }
+      .bbchat-file-preview { flex-shrink: 0 !important; }
       #bbchat-input { font-size: 16px; }
     }
     @media (min-width: 769px) and (max-width: 1024px) {
