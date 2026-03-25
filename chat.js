@@ -287,6 +287,8 @@
         bottom: 0 !important; right: 0 !important;
         top: 0 !important; left: 0 !important;
         border-radius: 0 !important;
+      }
+      #bbchat-container.bbchat-open {
         display: flex !important;
         flex-direction: column !important;
       }
