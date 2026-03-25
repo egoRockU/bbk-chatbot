@@ -464,7 +464,7 @@
     btn.style.backgroundColor    = cfg.buttonColor;
     header.style.backgroundColor = cfg.primaryColor;
     header.querySelector('h3').style.color = cfg.accentColor;
-    btnText.style.color          = cfg.accentColor;
+    if (btnText) btnText.style.color = cfg.accentColor;
 
     input.addEventListener('focus', () => {
       input.style.boxShadow = `0 0 0 2px ${cfg.primaryColor}`;
