@@ -22,39 +22,34 @@
     /* Chat Widget Styles */
     #chat-widget-button {
       position: fixed;
-      width: auto;
-      height: 40px;
-      padding: 0 16px 0 14px;
-      border-radius: 20px;
+      width: 60px;
+      height: 60px;
+      padding: 0;
+      border-radius: 50%;
       border: none;
       cursor: pointer;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
       transition: transform 0.3s, box-shadow 0.3s;
       z-index: 9998;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      overflow: hidden;
     }
 
     #chat-widget-button:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+      transform: translateY(-2px) scale(1.05);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.25);
     }
 
     #chat-widget-button svg {
-      width: 24px;
-      height: 24px;
+      width: 36px;
+      height: 36px;
       flex-shrink: 0;
     }
 
     #chat-widget-button .button-text {
-      color: #FAD02C;
-      font-size: 16px;
-      font-weight: 700;
-      letter-spacing: 0.5px;
-      text-transform: capitalize;
+      display: none;
     }
 
     #chat-widget-container {
@@ -586,10 +581,9 @@
       }
       #chat-widget-button {
         bottom: 20px !important; right: 20px !important;
-        padding: 0 12px 0 10px; height: 50px;
+        width: 56px; height: 56px;
       }
-      #chat-widget-button svg  { width: 20px; height: 20px; }
-      #chat-widget-button .button-text { font-size: 14px; }
+      #chat-widget-button svg  { width: 32px; height: 32px; }
       .message-content { max-width: 90%; font-size: 14px; }
       .chat-messages   { padding: 16px; }
       .chat-input-container { padding: 12px 16px; }
@@ -613,14 +607,9 @@
 
   <!-- Chat Widget Button -->
   <button id="chat-widget-button">
-    <svg viewBox="0 0 64 64" style="width: 22px; height: 22px;">
-      <rect x="8" y="12" width="44" height="32" rx="6" ry="6" fill="#FAD02C"/>
-      <path d="M 16 44 L 12 52 L 20 44 Z" fill="#FAD02C"/>
-      <circle cx="20" cy="28" r="3" fill="#007D99"/>
-      <circle cx="32" cy="28" r="3" fill="#007D99"/>
-      <circle cx="44" cy="28" r="3" fill="#007D99"/>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1068.91 1081">
+      <path d="M608.33,542.25a173.53,173.53,0,0,1,1.35-50.84A174.48,174.48,0,0,1,404.22,267.58a408.29,408.29,0,0,0-45.8,2.9C135.41,297.17-23.77,499.59,2.92,722.6S232,1104.77,455,1078.08c200.39-24,349.22-189.84,358-385-3.56.68-7.16,1.21-10.81,1.65A174.4,174.4,0,0,1,608.33,542.25ZM83.47,616c10.16-14.07,20.83-23.69,31-16.32s16.08,28.9,6,43-30.74,12.91-40.92,5.54S73.34,630.05,83.47,616Zm54.66,222.48c-26.9,11.57-55.77-8-64.16-27.55s6.78-31.66,33.73-43.24,50.72-16.27,59.16,3.25S165.05,826.82,138.13,838.47ZM170.7,436.19c-9.32-30.75,15.57-46.38,58-59.26s79-15.87,88.32,14.88-12.13,83.67-54.51,96.53S180,467,170.7,436.19ZM290.61,626.47c-8.14,9.6-18.55,4.7-31.76-6.55s-21.92-22.67-13.76-32.25,30.13-13.67,43.33-2.41S298.79,616.92,290.61,626.47Zm-11,368.38c-8.16,9.6-18.58,4.68-31.78-6.58s-21.93-22.66-13.74-32.22,30.1-13.67,43.31-2.42S287.73,985.27,279.57,994.85ZM393.22,832.66c-9.88,32.08-40.54,31.08-84.76,17.5s-77.67-32.31-67.79-64.4S300,720.42,344.17,734,403.06,800.57,393.22,832.66Zm69.35-281.37c20.95-3.7,54,14.58,59.1,43.47s-20.58,52.43-41.52,56.12S450.9,637,445.79,608.11,441.6,555,462.57,551.29Zm21.32,307.47c-12.39,2.21-17.3-8.2-20.32-25.29s-2.46-31.43,9.93-33.62,31.92,8.63,34.94,25.71S496.28,856.58,483.89,858.76Zm41,127.07c-10.92,18.25-46.33,31.29-71.55,16.3S427.07,952.29,438,934s29.64-13.06,54.82,2S535.73,967.54,524.87,985.83ZM706.6,828.31c-9.07,50.31-65.3,73.48-101.82,66.88s-39.48-40.38-30.41-90.69,25.2-89.52,61.7-82.94S715.64,778,706.6,828.31ZM463,204.72a9.36,9.36,0,0,1,7.67-9.42,241.36,241.36,0,0,0,102.17-48.14,238.13,238.13,0,0,0,19.67-17.63A241.3,241.3,0,0,0,658.31,7.67a9.63,9.63,0,0,1,18.86,0A241.65,241.65,0,0,0,864.77,195.3a9.61,9.61,0,0,1,0,18.83A241.44,241.44,0,0,0,742.91,279.9c-.93.93-1.86,1.88-2.79,2.84a241,241,0,0,0-56.3,93.85,3,3,0,0,1,.25.25,2,2,0,0,0-.42.28,240.21,240.21,0,0,0-6.48,24.64,9.63,9.63,0,0,1-18.86,0c-.21-1-.41-2-.65-3A241.72,241.72,0,0,0,470.71,214.13,9.35,9.35,0,0,1,463,204.72Zm605.87,254a7,7,0,0,1-5.69,7A179.2,179.2,0,0,0,924,604.92a7.14,7.14,0,0,1-14,0A179.23,179.23,0,0,0,770.85,465.74a7.13,7.13,0,0,1,0-14A179,179,0,0,0,861.26,403a176.69,176.69,0,0,0,20.3-24.27A179,179,0,0,0,910,312.56a7.14,7.14,0,0,1,14,0,179.3,179.3,0,0,0,139.19,139.21A7,7,0,0,1,1068.91,458.74Z" fill="#FAD02C"/>
     </svg>
-    <span class="button-text">Chat</span>
   </button>
 
   <!-- Chat Widget Container -->
