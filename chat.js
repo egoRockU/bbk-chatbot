@@ -448,10 +448,18 @@
     wrap.innerHTML = buildHTML(this.cfg);
     document.body.appendChild(wrap);
 
-    // Apply position
-    const pos = positionStyles(this.cfg.position);
-    document.getElementById('bbchat-btn').style.cssText       += pos;
-    document.getElementById('bbchat-container').style.cssText += pos;
+    // Apply position using individual properties (cssText += would wipe existing styles)
+    const positions = {
+      'bottom-right': { bottom: '20px', right: '20px', top: 'auto',  left: 'auto'  },
+      'bottom-left':  { bottom: '20px', left:  '20px', top: 'auto',  right: 'auto' },
+      'top-right':    { top:    '20px', right: '20px', bottom: 'auto', left: 'auto' },
+      'top-left':     { top:    '20px', left:  '20px', bottom: 'auto', right: 'auto'},
+    };
+    const pos = positions[this.cfg.position] || positions['bottom-right'];
+    const btn  = document.getElementById('bbchat-btn');
+    const cont = document.getElementById('bbchat-container');
+    Object.assign(btn.style,  pos);
+    Object.assign(cont.style, pos);
   };
 
   BBChatWidget.prototype._applyColors = function () {
