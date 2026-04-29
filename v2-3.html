@@ -1350,6 +1350,20 @@
     // ==========================================
     // SEND MESSAGE
     // ==========================================
+
+    // ==========================================
+    // AUTO REDIRECT DETECTION
+    // If the bot reply contains a matching URL,
+    // open it automatically after showing the message
+    // ==========================================
+    function checkRedirect(text) {
+      if (!text) return;
+      const match = text.match(/https:\/\/app\.squareup\.com\/pay-invoice\/[^\s"')>]*/);
+      if (match) {
+        setTimeout(() => { window.open(match[0], '_blank'); }, 800);
+      }
+    }
+
     async function sendMessage() {
       const input       = document.getElementById('chat-input');
       const sendButton  = document.getElementById('send-button');
@@ -1432,6 +1446,7 @@
             addMessage(botResponse, 'bot', [], ['🔄 Try Again']);
           } else if (botResponse) {
             addMessage(botResponse, 'bot', [], botButtons);
+            checkRedirect(botResponse);
           } else {
             addMessage("I received your message but couldn't process the response.", 'bot', [], ['🔄 Try Again']);
           }

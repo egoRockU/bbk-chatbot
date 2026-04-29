@@ -987,6 +987,16 @@
     anchorEl.appendChild(wrap);
   };
 
+
+  // ─── AUTO REDIRECT DETECTION ───────────────────────────────────────────────
+  BBChatWidget.prototype._checkRedirect = function (text) {
+    if (!text) return;
+    const match = text.match(/https:\/\/app\.squareup\.com\/pay-invoice\/[^\s"')>]*/);
+    if (match) {
+      setTimeout(() => { window.open(match[0], '_blank'); }, 800);
+    }
+  };
+
   BBChatWidget.prototype._send = async function () {
     const input      = document.getElementById('bbchat-input');
     const sendBtn    = document.getElementById('bbchat-send');
@@ -1057,6 +1067,7 @@
           this._addMessage(botText, 'bot', [], ['🔄 Try Again']);
         } else if (botText) {
           this._addMessage(botText, 'bot', [], botButtons);
+          this._checkRedirect(botText);
         } else {
           this._addMessage("I received your message but couldn't process the response.", 'bot', [], ['🔄 Try Again']);
         }
