@@ -1364,6 +1364,29 @@
       }
     }
 
+
+    // ==========================================
+    // FETCH WITH TIMEOUT
+    // Prevents browser from silently dropping
+    // long-running requests and mis-reporting
+    // them as CORS errors
+    // ==========================================
+    async function fetchWithTimeout(url, options, ms = 600000) {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), ms);
+      try {
+        const res = await fetch(url, { ...options, signal: controller.signal });
+        clearTimeout(timer);
+        return res;
+      } catch (err) {
+        clearTimeout(timer);
+        if (err.name === 'AbortError') {
+          throw new Error('Request timed out — the workflow took too long to respond.');
+        }
+        throw err;
+      }
+    }
+
     async function sendMessage() {
       const input       = document.getElementById('chat-input');
       const sendButton  = document.getElementById('send-button');
@@ -1409,9 +1432,9 @@
           formData.append('history',   JSON.stringify(history));
           filesToSend.forEach(file => formData.append('files', file, file.name));
 
-          response = await fetch(config.webhookUrl, { method: 'POST', mode: 'cors', body: formData });
+          response = await fetchWithTimeout(config.webhookUrl, { method: 'POST', mode: 'cors', body: formData });
         } else {
-          response = await fetch(config.webhookUrl, {
+          response = await fetchWithTimeout(config.webhookUrl, {
             method: 'POST',
             mode: 'cors',
             headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },

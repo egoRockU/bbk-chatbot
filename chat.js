@@ -997,6 +997,25 @@
     }
   };
 
+
+  // ─── FETCH WITH TIMEOUT ────────────────────────────────────────────────────
+  BBChatWidget.prototype._fetchWithTimeout = async function (url, options, ms) {
+    ms = ms || 600000;
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), ms);
+    try {
+      const res = await fetch(url, Object.assign({}, options, { signal: controller.signal }));
+      clearTimeout(timer);
+      return res;
+    } catch (err) {
+      clearTimeout(timer);
+      if (err.name === 'AbortError') {
+        throw new Error('Request timed out — the workflow took too long to respond.');
+      }
+      throw err;
+    }
+  };
+
   BBChatWidget.prototype._send = async function () {
     const input      = document.getElementById('bbchat-input');
     const sendBtn    = document.getElementById('bbchat-send');
@@ -1030,9 +1049,9 @@
         fd.append('sessionId', this.sessionId);
         fd.append('history',   JSON.stringify(history));
         filesToSend.forEach(f => fd.append('files', f, f.name));
-        response = await fetch(this.cfg.webhookUrl, { method: 'POST', mode: 'cors', body: fd });
+        response = await this._fetchWithTimeout(this.cfg.webhookUrl, { method: 'POST', mode: 'cors', body: fd });
       } else {
-        response = await fetch(this.cfg.webhookUrl, {
+        response = await this._fetchWithTimeout(this.cfg.webhookUrl, {
           method: 'POST', mode: 'cors',
           headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
           body: JSON.stringify({
