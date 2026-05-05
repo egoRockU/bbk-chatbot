@@ -238,18 +238,42 @@ Ask About:
     * Kosher
     * Dye free colors
 
-## 9. Inquiry Confirmation
+## 9. Referral Source & Newsletter
+Ask the following two questions, ONE per response (do not combine them).
+
+1. Referral Source
+    - output key: "Referral Source"
+    - output value: {{referral_source}}
+    **Options (LMS)**
+    * Google / Search
+    * Instagram
+    * Facebook
+    * TikTok
+    * Friend / Word of Mouth
+    * Event / Market
+    * Other
+    **Rule**
+    - Present the options as a friendly list so the user can pick one. Accept free-text answers too if they don't match an option.
+
+2. Newsletter Subscription
+    - output key: "Newsletter"
+    - output value: {{newsletter_subscription}}
+    **Rule**
+    - This question must be answerable by Yes or No. Append **(Yes/No)** at the end.
+    - Store the value as `true` if Yes, `false` if No.
+
+## 10. Inquiry Confirmation
 Once all info is gathered:
 1. Recap each item clearly
 2. Ask: "Would you like to finalize this inquiry?"
 
-## 10. If the inquiry is NOT confirmed
+## 11. If the inquiry is NOT confirmed
 If the user replies that changes are needed (e.g., "Change the date," "The address is wrong"), follow these steps:
 1. **Acknowledge and Apply:** Acknowledge the user's requested change (e.g., "Understood, I'm updating the delivery date to...") and apply the change to the corresponding data field.
 2. **Re-Confirm and Present:** Once the changes are applied, immediately generate and output the **Revised Inquiry Confirmation** list below.
 3. **Repeat Loop:** Continue this acknowledgment, revision, and re-confirmation loop until the user explicitly replies with "Yes," "Confirm," or similar confirmation language.
 
-## 11. FINAL OUTPUT INSTRUCTION
+## 12. FINAL OUTPUT INSTRUCTION
 Output a Minified JSON object on a single line.
 
 **STRICT RULES:**
@@ -292,6 +316,8 @@ Output a Minified JSON object on a single line.
     "Time": "{{order_time}}",
     "Address": "{{delivery_address}}",
     "Special Instructions": "{{notes}}",
+    "Referral Source": "{{referral_source}}",
+    "Newsletter": {{newsletter_subscription}},
     "Additional Charges": "{{number_float}}",
     "Session ID": "{{ $('When chat message received').item.json.sessionId }}",
     "Execution ID: "{{$execution.id}}",
