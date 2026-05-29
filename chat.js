@@ -11,6 +11,10 @@
 (function (global) {
   'use strict';
 
+  // ─── ANALYTICS ─────────────────────────────────────────────────────────────
+  // Fired once each time the chat widget is opened (see _trackOpen).
+  const OPEN_TRACK_URL = 'https://wox-automation.app.n8n.cloud/webhook/99538a32-402a-4cd7-9b64-d88c462fdeaf';
+
   // ─── DEFAULT CONFIG ────────────────────────────────────────────────────────
   const DEFAULTS = {
     webhookUrl:     '',                          // REQUIRED
@@ -582,7 +586,28 @@
   BBChatWidget.prototype._open = function () {
     document.getElementById('bbchat-btn').style.display = 'none';
     document.getElementById('bbchat-container').classList.add('bbchat-open');
+    this._trackOpen();
     if (this.messages.length === 0) this._addMessage(this.cfg.welcomeMessage, 'bot', [], this.cfg.welcomeButtons);
+  };
+
+  // ─── ANALYTICS: WIDGET OPEN ─────────────────────────────────────────────────
+  // Fire-and-forget beacon sent every time the widget is opened.
+  BBChatWidget.prototype._trackOpen = function () {
+    // Local datetime formatted as YYYY-MM-DDTHH:mm:ss (no timezone / ms)
+    const d  = new Date();
+    const p  = n => String(n).padStart(2, '0');
+    const datetime = `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}` +
+                     `T${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
+
+    try {
+      fetch(OPEN_TRACK_URL, {
+        method: 'POST',
+        mode: 'cors',
+        keepalive: true,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionID: this.sessionId, datetime })
+      }).catch(() => {});
+    } catch (e) { /* never let analytics break the widget */ }
   };
 
   BBChatWidget.prototype._close = function () {

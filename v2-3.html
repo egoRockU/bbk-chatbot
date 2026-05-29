@@ -714,6 +714,9 @@
       welcomeButtons: ['Custom Cookies 🍪']
     };
 
+    // Fired once each time the chat widget is opened (see trackOpen).
+    const OPEN_TRACK_URL = 'https://wox-automation.app.n8n.cloud/webhook/99538a32-402a-4cd7-9b64-d88c462fdeaf';
+
     // ==========================================
     // STATE
     // ==========================================
@@ -813,7 +816,30 @@
     function openChat() {
       document.getElementById('chat-widget-button').style.display = 'none';
       document.getElementById('chat-widget-container').classList.add('open');
+      trackOpen();
       if (messages.length === 0) addMessage(config.welcomeMessage, 'bot', [], config.welcomeButtons);
+    }
+
+    // Fire-and-forget beacon sent every time the widget is opened.
+    function trackOpen() {
+      let sessionId = localStorage.getItem('chatSessionId');
+      if (!sessionId) { sessionId = generateSessionId(); localStorage.setItem('chatSessionId', sessionId); }
+
+      // Local datetime formatted as YYYY-MM-DDTHH:mm:ss (no timezone / ms)
+      const d  = new Date();
+      const p  = n => String(n).padStart(2, '0');
+      const datetime = `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}` +
+                       `T${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
+
+      try {
+        fetch(OPEN_TRACK_URL, {
+          method: 'POST',
+          mode: 'cors',
+          keepalive: true,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sessionID: sessionId, datetime })
+        }).catch(() => {});
+      } catch (e) { /* never let analytics break the widget */ }
     }
 
     function closeChat() {
