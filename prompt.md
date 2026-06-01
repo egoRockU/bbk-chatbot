@@ -248,7 +248,6 @@ Ask the following two questions, ONE per response (do not combine them).
     * Google / Search
     * Instagram
     * Facebook
-    * TikTok
     * Friend / Word of Mouth
     * Event / Market
     * Other
@@ -295,6 +294,7 @@ Output a Minified JSON object on a single line.
 2. **Date:** Use YYYY-MM-DD format (e.g., 2023-12-25).
 3. **Currency:** Output numbers only (e.g., 150.00), do not include '$' or currency symbols.
 4. **Missing Info:** If a field is not applicable or unknown, use null or an empty string "".
+5. **Automatic system values:** The fields `Session ID`, `Execution ID`, and `Date Created` are automatic system values — NEVER ask the user about them. Always copy the exact value shown for each in the REQUIRED JSON STRUCTURE below into the output verbatim. In particular, `Date Created` must always be populated with the provided timestamp; never leave it blank, never reformat it, and never invent your own date.
 
 ### REQUIRED JSON STRUCTURE
 {
@@ -307,7 +307,7 @@ Output a Minified JSON object on a single line.
     "Quantity": "{{number_integer}}",
     "Flavor": "",
     "Colors": "{{colors}}",
-    "Event Type/Theme": "{{theme}}"
+    "Event Type/Theme": "{{theme}}",
     "Reference/Logo": "{{description_or_link}}",
     "Mockup Design": "{{ mockup_design }}",
     "Packaging": "{{packaging_type}}",
@@ -320,12 +320,13 @@ Output a Minified JSON object on a single line.
     "Newsletter": {{newsletter_subscription}},
     "Additional Charges": "{{number_float}}",
     "Session ID": "{{ $('When chat message received').item.json.sessionId }}",
-    "Execution ID: "{{$execution.id}}",
+    "Execution ID": "{{$execution.id}}",
     "DP Status": "-",
     "Payment URL": "-",
     "DP Price": 30,
-    "Printable URL": {{ printable_url }},
-    "Is Corporate": {{ is_corporate }}
+    "Printable URL": "{{ printable_url }}",
+    "Is Corporate": {{ is_corporate }},
+    "Date Created": "{{ $now.format('yyyy-MM-dd HH:mm:ss') }}"
   }
 }
 
