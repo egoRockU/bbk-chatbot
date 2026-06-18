@@ -1106,7 +1106,7 @@
         this._hideTyping();
         const looksLikeError = botText && /Error/.test(botText);
         if (n8nError) {
-          this._addMessage('⚠️ Something went wrong in the workflow:\n' + n8nError, 'bot', [], ['🔄 Try Again']);
+          this._addMessage('⚠️ Oops! Something went wrong. Please try again.', 'bot', [], ['🔄 Try Again']);
         } else if (looksLikeError) {
           this._addMessage(botText, 'bot', [], ['🔄 Try Again']);
         } else if (botText) {
@@ -1122,13 +1122,7 @@
     } catch (err) {
       setTimeout(() => {
         this._hideTyping();
-        let msg = "Sorry, I couldn't connect to the server.\n\n";
-        if (err.message.includes('Failed to fetch') || err.message.includes('NetworkError')) {
-          msg += '❌ Check:\n1. CORS settings in n8n\n2. Webhook URL is correct\n3. Workflow is active';
-        } else {
-          msg += 'Error: ' + err.message;
-        }
-        this._addMessage(msg, 'bot', [], ['🔄 Try Again']);
+        this._addMessage('⚠️ Oops! Something went wrong. Please try again.', 'bot', [], ['🔄 Try Again']);
         [input, sendBtn, attachBtn].forEach(el => { el.disabled = false; el.style.opacity = '1'; });
         input.focus();
       }, 500);

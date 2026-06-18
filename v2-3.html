@@ -1490,7 +1490,7 @@
           hideTypingIndicator();
           const looksLikeError = botResponse && /Error/.test(botResponse);
           if (n8nError) {
-            addMessage('⚠️ Something went wrong in the workflow:\n' + n8nError, 'bot', [], ['🔄 Try Again']);
+            addMessage('⚠️ Oops! Something went wrong. Please try again.', 'bot', [], ['🔄 Try Again']);
           } else if (looksLikeError) {
             addMessage(botResponse, 'bot', [], ['🔄 Try Again']);
           } else if (botResponse) {
@@ -1511,13 +1511,7 @@
       } catch (error) {
         setTimeout(() => {
           hideTypingIndicator();
-          let msg = "Sorry, I couldn't connect to the server.\n\n";
-          if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
-            msg += '❌ Connection failed. Check:\n1. CORS settings in n8n\n2. Webhook URL\n3. Workflow is active\n\n💡 Check browser console (F12)';
-          } else {
-            msg += 'Error: ' + error.message;
-          }
-          addMessage(msg, 'bot', [], ['🔄 Try Again']);
+          addMessage('⚠️ Oops! Something went wrong. Please try again.', 'bot', [], ['🔄 Try Again']);
           input.disabled = false;
           sendButton.disabled = false;
           attachButton.disabled = false;
