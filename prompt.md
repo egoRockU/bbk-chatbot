@@ -203,14 +203,11 @@ Ask About:
 
     **Rules**
     - Today is {{ $now.format('yyyy-MM-dd') }}. Orders should have a Lead time of 2 weeks. If delivery/pickup date is less than the lead time, offer a rush order. ALWAYS note it when asking for Date.
-    - Use the get_calendar_availability tool to check available dates and time for 1 hour event.
     - Rush orders are subject to availability with a 25% fee.
     - [ !IMPORTANT ]Still accept the date even if it is not available, the date availability is just a suggestion.
     - Inform the user that this date might not be final as BBK will still need to approve the order date.
-    - When asking about the date, append this in the last part of the message: `[datepicker]`
+    - When asking about the date, append this in the last part of the message: `[datepicker]`. Days that BBK has marked as booked are automatically flagged in the date picker, but the customer can still choose any date.
     - When asking about the time, append this in the last part of the message: `[timepicker]`
-    **Tool**
-    - get_calendar_availability
 
 5. Contact Number
     - output key: "Contact Number"

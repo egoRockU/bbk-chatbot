@@ -263,6 +263,19 @@
       color: #ccc;
       cursor: not-allowed;
     }
+    .dp-day.dp-booked { position: relative; color: #C77A00; }
+    .dp-day.dp-booked::after {
+      content: ''; position: absolute; bottom: 3px; left: 50%;
+      transform: translateX(-50%); width: 4px; height: 4px;
+      border-radius: 50%; background: #E8A317;
+    }
+    .dp-day.dp-booked.dp-selected { color: white; }
+    .dp-day.dp-booked.dp-selected::after { background: white; }
+    .dp-booked-note {
+      margin-top: 8px; padding: 6px 9px; border-radius: 8px;
+      background: #FFF6E5; border: 1px solid #F0D08A; color: #8A5A00;
+      font-size: 12px; line-height: 1.35;
+    }
     .dp-day.dp-empty { cursor: default; }
     .dp-confirm {
       margin-top: 10px;
@@ -936,11 +949,17 @@
     // INLINE DATE PICKER
     // Triggered when bot message contains [datepicker]
     // ==========================================
-    function renderDatePicker(anchorEl) {
+    function renderDatePicker(anchorEl, bookedDates) {
       const today    = new Date();
       let   viewYear = today.getFullYear();
       let   viewMonth= today.getMonth();
       let   selected = null;
+
+      // Booked dates are a suggestion only — they are marked but stay selectable.
+      const bookedSet = new Set(Array.isArray(bookedDates) ? bookedDates : []);
+      const ymd = date => date.getFullYear() + '-'
+        + String(date.getMonth() + 1).padStart(2, '0') + '-'
+        + String(date.getDate()).padStart(2, '0');
 
       const DAYS  = ['Su','Mo','Tu','We','Th','Fr','Sa'];
       const MONTHS= ['January','February','March','April','May','June',
@@ -1018,6 +1037,9 @@
             if (cellDate.toDateString() === todayMid.toDateString())
               btn.classList.add('dp-today');
 
+            if (bookedSet.has(ymd(cellDate)))
+              btn.classList.add('dp-booked');
+
             if (selected && cellDate.toDateString() === selected.toDateString())
               btn.classList.add('dp-selected');
 
@@ -1029,6 +1051,14 @@
           grid.appendChild(btn);
         }
         wrap.appendChild(grid);
+
+        // Gentle heads-up if the chosen day is one BBK marked as booked (still allowed).
+        if (selected && bookedSet.has(ymd(selected))) {
+          const note = document.createElement('div');
+          note.className = 'dp-booked-note';
+          note.textContent = '📌 This date is already booked, but you can still select it — all orders are subject to BBK\'s approval.';
+          wrap.appendChild(note);
+        }
 
         // Confirm button
         const confirm = document.createElement('button');
@@ -1198,11 +1228,16 @@
       const contentDiv = document.createElement('div');
       contentDiv.className = 'message-content';
 
-      // Detect [datepicker] / [timepicker] triggers from n8n
-      const hasDatePicker = sender === 'bot' && text && /\[datepicker\]/i.test(text);
+      // Detect [datepicker] / [timepicker] triggers from n8n.
+      // [datepicker] may carry booked dates as a payload, e.g. [datepicker:2026-07-04,2026-07-11]
+      const dpMatch = (sender === 'bot' && text) ? text.match(/\[datepicker(?::([^\]]*))?\]/i) : null;
+      const hasDatePicker = !!dpMatch;
+      const bookedDates = (dpMatch && dpMatch[1])
+        ? dpMatch[1].split(',').map(s => s.trim()).filter(Boolean)
+        : [];
       const hasTimePicker = sender === 'bot' && text && /\[timepicker\]/i.test(text);
       const cleanText = text
-        ? text.replace(/\[datepicker\]/gi, '').replace(/\[timepicker\]/gi, '').trim()
+        ? text.replace(/\[datepicker(?::[^\]]*)?\]/gi, '').replace(/\[timepicker\]/gi, '').trim()
         : text;
 
       if (cleanText) {
@@ -1240,7 +1275,7 @@
       if (hasDatePicker) {
         const dpContainer = document.createElement('div');
         document.getElementById('chat-messages').appendChild(dpContainer);
-        renderDatePicker(dpContainer);
+        renderDatePicker(dpContainer, bookedDates);
       }
 
       // Render inline time picker if triggered
